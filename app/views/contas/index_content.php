@@ -42,21 +42,24 @@
                     <p class="text-muted">Nenhuma conta cadastrada.</p>
                 <?php else: ?>
                     <table class="table table-striped">
-                        <thead>
-                        <tr>
-                            <th>Conta</th>
-                            <th>Saldo inicial</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <?php foreach ($contas as $c): ?>
-                            <tr>
-                                <td><?= htmlspecialchars($c['nome']) ?></td>
-                                <td>R$ <?= number_format($c['saldo_inicial'], 2, ',', '.') ?></td>
-                            </tr>
-                        <?php endforeach; ?>
-                        </tbody>
-                    </table>
+    <thead>
+    <tr>
+        <th>Conta</th>
+        <th>Saldo atual</th>
+    </tr>
+    </thead>
+    <tbody>
+    <?php foreach ($contas as $c): ?>
+        <tr>
+            <td><?= htmlspecialchars($c['nome']) ?></td>
+            <td class="<?= $c['saldo_atual'] >= 0 ? 'text-success' : 'text-danger' ?>">
+                R$ <?= number_format($c['saldo_atual'], 2, ',', '.') ?>
+            </td>
+        </tr>
+    <?php endforeach; ?>
+    </tbody>
+</table>
+
                 <?php endif; ?>
             </div>
         </div>

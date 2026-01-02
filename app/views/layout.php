@@ -27,11 +27,14 @@
             <a href="/financas/public/?url=contas" class="list-group-item list-group-item-action">
                 Contas
             </a>
-            <a href="#" class="list-group-item list-group-item-action">
+            <a href="/financas/public/?url=lancamentos" class="list-group-item list-group-item-action">
                 Lançamentos
             </a>
             <a href="#" class="list-group-item list-group-item-action">
                 Relatórios
+            </a>
+            <a href="/financas/public/?url=categorias" class="list-group-item list-group-item-action">
+                Categorias
             </a>
         </div>
     </div>
@@ -80,6 +83,7 @@ document.getElementById("menu-toggle").addEventListener("click", function () {
     document.getElementById("wrapper").classList.toggle("toggled");
 });
 </script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 </body>
 </html>
