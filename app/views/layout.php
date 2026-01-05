@@ -56,9 +56,19 @@ if (isset($_SESSION['usuario'])) {
             <a href="/financas/public/?url=lancamentos" class="list-group-item list-group-item-action">
                 Lançamentos
             </a>
-            <a href="#" class="list-group-item list-group-item-action">
-                Relatórios
+            <a href="/financas/public/?url=relatorio-csv&ano=<?= date('Y') ?>&mes=<?= date('m') ?>"
+                class="btn btn-outline-success">
+                📥 Exportar relatório CSV
             </a>
+            <a href="/financas/public/?url=relatorio-pdf&ano=<?= date('Y') ?>&mes=<?= date('m') ?>"
+                class="btn btn-outline-danger">
+                📄 Exportar PDF
+            </a>
+            <a href="/financas/public/?url=relatorio-pdf-executivo&ano=<?= date('Y') ?>&mes=<?= date('m') ?>"
+                class="btn btn-dark">
+                📊 PDF Executivo
+            </a>
+
             <a href="/financas/public/?url=categorias" class="list-group-item list-group-item-action">
                 Categorias
             </a>

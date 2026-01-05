@@ -155,5 +155,27 @@ function normalizaValor($valor)
     $valor = str_replace(',', '.', $valor);
     return (float)$valor;
 }
+public static function allByMes(PDO $pdo, int $idUsuario, int $ano, int $mes): array
+{
+    $stmt = $pdo->prepare("
+        SELECT 
+            l.data,
+            l.descricao,
+            l.tipo,
+            c.nome AS conta,
+            cat.nome AS categoria,
+            l.valor
+        FROM lancamentos l
+        JOIN contas c ON c.id = l.id_conta
+        JOIN categorias cat ON cat.id = l.id_categoria
+        WHERE l.id_usuario = ?
+          AND YEAR(l.data) = ?
+          AND MONTH(l.data) = ?
+        ORDER BY l.data ASC
+    ");
+    $stmt->execute([$idUsuario, $ano, $mes]);
+    return $stmt->fetchAll();
+}
+
 
 }

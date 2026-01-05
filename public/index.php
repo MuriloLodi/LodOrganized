@@ -8,6 +8,7 @@ require_once __DIR__ . '/../app/controllers/CategoriaController.php';
 require_once __DIR__ . '/../app/controllers/LancamentoController.php';
 require_once __DIR__ . '/../app/controllers/DashboardController.php';
 require_once __DIR__ . '/../app/controllers/OrcamentoController.php';
+require_once __DIR__ . '/../app/controllers/RelatorioController.php';
 require_once __DIR__ . '/../app/helpers/helpers.php';
 
 $rota = $_GET['url'] ?? 'login';
@@ -48,6 +49,18 @@ switch ($rota) {
 
     case 'register-store':
         AuthController::register($pdo);
+        break;
+
+    case 'relatorio-csv':
+        RelatorioController::exportCsv($pdo);
+        break;
+        
+    case 'relatorio-pdf-executivo':
+        RelatorioController::exportPdfExecutivo($pdo);
+        break;
+
+    case 'relatorio-pdf':
+        RelatorioController::exportPdf($pdo);
         break;
 
     case 'lancamentos':
