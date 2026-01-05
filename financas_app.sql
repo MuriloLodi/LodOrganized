@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Tempo de geração: 02/01/2026 às 20:52
+-- Tempo de geração: 05/01/2026 às 20:53
 -- Versão do servidor: 10.4.32-MariaDB
 -- Versão do PHP: 8.2.12
 
@@ -41,7 +41,10 @@ CREATE TABLE `categorias` (
 
 INSERT INTO `categorias` (`id`, `id_usuario`, `nome`, `tipo`, `criada_em`) VALUES
 (1, 2, 'Teste', 'D', '2026-01-02 19:32:28'),
-(2, 2, 'teste', 'R', '2026-01-02 19:32:36');
+(2, 2, 'teste', 'R', '2026-01-02 19:32:36'),
+(3, 3, 'teste', 'R', '2026-01-05 17:49:36'),
+(4, 2, 'Alimentação', 'D', '2026-01-05 18:20:22'),
+(5, 3, 'testee', 'D', '2026-01-05 18:33:28');
 
 -- --------------------------------------------------------
 
@@ -63,7 +66,8 @@ CREATE TABLE `contas` (
 --
 
 INSERT INTO `contas` (`id`, `id_usuario`, `nome`, `saldo_inicial`, `saldo_atual`, `criada_em`) VALUES
-(1, 2, '1212121', 100.00, 100.00, '2026-01-02 19:39:27');
+(1, 2, '1212121', 100.00, 100.00, '2026-01-02 19:39:27'),
+(2, 3, 'Murilo', 100.00, 1020.00, '2026-01-05 17:49:25');
 
 -- --------------------------------------------------------
 
@@ -88,7 +92,33 @@ CREATE TABLE `lancamentos` (
 --
 
 INSERT INTO `lancamentos` (`id`, `id_usuario`, `id_conta`, `id_categoria`, `tipo`, `valor`, `data`, `descricao`, `criado_em`) VALUES
-(1, 2, 1, 1, 'R', 120.00, '2026-01-03', 'teste', '2026-01-02 19:39:44');
+(1, 2, 1, 1, 'R', 120.00, '2026-01-03', 'teste', '2026-01-02 19:39:44'),
+(2, 3, 2, 3, 'R', 1000.00, '2026-01-06', '', '2026-01-05 17:49:46'),
+(3, 3, 2, 5, 'D', 10.00, '2026-01-06', '', '2026-01-05 18:51:55'),
+(4, 3, 2, 5, 'D', 70.00, '2026-01-05', '', '2026-01-05 18:55:30');
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura para tabela `orcamentos`
+--
+
+CREATE TABLE `orcamentos` (
+  `id` int(11) NOT NULL,
+  `id_usuario` int(11) NOT NULL,
+  `id_categoria` int(11) NOT NULL,
+  `ano` int(11) NOT NULL,
+  `mes` int(11) NOT NULL,
+  `valor` decimal(10,2) NOT NULL,
+  `criado_em` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Despejando dados para a tabela `orcamentos`
+--
+
+INSERT INTO `orcamentos` (`id`, `id_usuario`, `id_categoria`, `ano`, `mes`, `valor`, `criado_em`) VALUES
+(1, 3, 5, 2026, 1, 90.00, '2026-01-05 18:51:38');
 
 -- --------------------------------------------------------
 
@@ -111,7 +141,8 @@ CREATE TABLE `usuarios` (
 
 INSERT INTO `usuarios` (`id`, `nome`, `email`, `senha`, `tipo`, `criado_em`) VALUES
 (1, 'Admin', 'admin@teste.com', '<?= password_hash(\"123456\", PASSWORD_DEFAULT) ?>', 'pessoal', '2026-01-02 19:10:29'),
-(2, 'Murilo', 'm@gmail.com', '$2y$10$1jhCVFkYIF2R8h.4rPMmxONr6XsSsUIoFav8Y79muVvTlO3KlEHIO', 'pessoal', '2026-01-02 19:15:31');
+(2, 'Murilo', 'm@gmail.com', '$2y$10$1jhCVFkYIF2R8h.4rPMmxONr6XsSsUIoFav8Y79muVvTlO3KlEHIO', 'pessoal', '2026-01-02 19:15:31'),
+(3, 'Murilo', 'murlxff@gmail.com', '$2y$10$N.0ehlGYDWkgPOTcgzKr9eWKdDBEJxO0jFuE8o.MnoHVUY97isaO.', 'pessoal', '2026-01-05 17:44:36');
 
 --
 -- Índices para tabelas despejadas
@@ -141,6 +172,14 @@ ALTER TABLE `lancamentos`
   ADD KEY `id_categoria` (`id_categoria`);
 
 --
+-- Índices de tabela `orcamentos`
+--
+ALTER TABLE `orcamentos`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uk_orcamento` (`id_usuario`,`id_categoria`,`ano`,`mes`),
+  ADD KEY `fk_orc_categoria` (`id_categoria`);
+
+--
 -- Índices de tabela `usuarios`
 --
 ALTER TABLE `usuarios`
@@ -155,25 +194,31 @@ ALTER TABLE `usuarios`
 -- AUTO_INCREMENT de tabela `categorias`
 --
 ALTER TABLE `categorias`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT de tabela `contas`
 --
 ALTER TABLE `contas`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT de tabela `lancamentos`
 --
 ALTER TABLE `lancamentos`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
+--
+-- AUTO_INCREMENT de tabela `orcamentos`
+--
+ALTER TABLE `orcamentos`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT de tabela `usuarios`
 --
 ALTER TABLE `usuarios`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- Restrições para tabelas despejadas
@@ -198,6 +243,13 @@ ALTER TABLE `lancamentos`
   ADD CONSTRAINT `lancamentos_ibfk_1` FOREIGN KEY (`id_usuario`) REFERENCES `usuarios` (`id`),
   ADD CONSTRAINT `lancamentos_ibfk_2` FOREIGN KEY (`id_conta`) REFERENCES `contas` (`id`),
   ADD CONSTRAINT `lancamentos_ibfk_3` FOREIGN KEY (`id_categoria`) REFERENCES `categorias` (`id`);
+
+--
+-- Restrições para tabelas `orcamentos`
+--
+ALTER TABLE `orcamentos`
+  ADD CONSTRAINT `fk_orc_categoria` FOREIGN KEY (`id_categoria`) REFERENCES `categorias` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_orc_usuario` FOREIGN KEY (`id_usuario`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
