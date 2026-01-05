@@ -9,8 +9,10 @@ class LancamentoController
 {
     public static function index($pdo)
 {
+    // ✅ PRIMEIRA COISA: definir usuário
     $idUsuario = $_SESSION['usuario']['id'];
 
+    // 🔎 Filtros
     $filtros = [
         'data_inicio'  => $_GET['data_inicio'] ?? '',
         'data_fim'     => $_GET['data_fim'] ?? '',
@@ -18,19 +20,28 @@ class LancamentoController
         'id_categoria' => $_GET['id_categoria'] ?? ''
     ];
 
-    // 📄 Lista de lançamentos (tabela)
+    // 📄 Lançamentos (tabela)
     $lancamentos = Lancamento::filtrar($pdo, $idUsuario, $filtros);
 
-    // 📊 Dados para gráficos
+    // 📊 Gráficos
     $resumoTipo = Dashboard::resumoPorTipo($pdo, $idUsuario, $filtros);
     $resumoCategoria = Dashboard::resumoPorCategoria($pdo, $idUsuario, $filtros);
 
-    // 🔽 Combos de filtro
+    // 📈 Gráfico mensal (linha)
+    $anoAtual = date('Y');
+    $resumoLinha = Dashboard::resumoMensalLinha(
+        $pdo,
+        $idUsuario,
+        $anoAtual
+    );
+
+    // 🔽 Combos
     $contas     = Conta::allByUsuario($pdo, $idUsuario);
     $categorias = Categoria::allByUsuario($pdo, $idUsuario);
 
     require '../app/views/lancamentos/index.php';
 }
+
 
 
 

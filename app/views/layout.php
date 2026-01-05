@@ -36,6 +36,10 @@
             <a href="/financas/public/?url=categorias" class="list-group-item list-group-item-action">
                 Categorias
             </a>
+            <a href="/financas/public/?url=orcamentos" class="list-group-item list-group-item-action">
+                Orçamento
+            </a>
+
         </div>
     </div>
 

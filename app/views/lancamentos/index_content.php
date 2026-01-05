@@ -153,6 +153,12 @@
         </div>
     </div>
 </div>
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <h6 class="mb-3">Evolução mensal (<?= date('Y') ?>)</h6>
+        <canvas id="graficoLinha"></canvas>
+    </div>
+</div>
 
 <?php
 $totalReceitas = 0;
@@ -229,6 +235,27 @@ foreach ($lancamentos as $l) {
         </div>
     </div>
 </div>
+
+<?php
+$meses = [
+    1 => 'Jan', 2 => 'Fev', 3 => 'Mar', 4 => 'Abr',
+    5 => 'Mai', 6 => 'Jun', 7 => 'Jul', 8 => 'Ago',
+    9 => 'Set', 10 => 'Out', 11 => 'Nov', 12 => 'Dez'
+];
+
+$receitasMensais = array_fill(1, 12, 0);
+$despesasMensais = array_fill(1, 12, 0);
+
+foreach ($resumoLinha as $r) {
+    if ($r['tipo'] === 'R') {
+        $receitasMensais[$r['mes']] = (float)$r['total'];
+    } else {
+        $despesasMensais[$r['mes']] = (float)$r['total'];
+    }
+}
+?>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <script>
 const dadosTipo = {
     receitas: <?= json_encode(
@@ -262,6 +289,48 @@ new Chart(document.getElementById('graficoTipo'), {
     }
 });
 </script>
+<script>
+const meses = <?= json_encode(array_values($meses)) ?>;
+const receitas = <?= json_encode(array_values($receitasMensais)) ?>;
+const despesas = <?= json_encode(array_values($despesasMensais)) ?>;
+
+new Chart(document.getElementById('graficoLinha'), {
+    type: 'line',
+    data: {
+        labels: meses,
+        datasets: [
+            {
+                label: 'Receitas',
+                data: receitas,
+                borderColor: '#198754',
+                backgroundColor: 'rgba(25,135,84,0.15)',
+                tension: 0.3,
+                fill: true
+            },
+            {
+                label: 'Despesas',
+                data: despesas,
+                borderColor: '#dc3545',
+                backgroundColor: 'rgba(220,53,69,0.15)',
+                tension: 0.3,
+                fill: true
+            }
+        ]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: { position: 'bottom' }
+        },
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+</script>
+
 <script>
 const categorias = <?= json_encode(array_column($resumoCategoria, 'nome')) ?>;
 const valores = <?= json_encode(array_column($resumoCategoria, 'total')) ?>;

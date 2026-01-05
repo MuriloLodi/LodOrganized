@@ -5,7 +5,7 @@
     <title>Criar conta • Finanças</title>
     <link rel="stylesheet" href="/financas/public/css/app.css">
 </head>
-<body>
+<body style="display: flex;">
 
 <div class="login-container">
     <form method="POST" action="/financas/public/?url=register-store" class="login-card">

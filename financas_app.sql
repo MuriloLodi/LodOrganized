@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jan 05, 2026 at 05:50 PM
--- Server version: 10.4.32-MariaDB
--- PHP Version: 8.2.12
+-- Tempo de geração: 02/01/2026 às 20:52
+-- Versão do servidor: 10.4.32-MariaDB
+-- Versão do PHP: 8.2.12
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -18,13 +18,13 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `financas_app`
+-- Banco de dados: `financas_app`
 --
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `categorias`
+-- Estrutura para tabela `categorias`
 --
 
 CREATE TABLE `categorias` (
@@ -36,18 +36,17 @@ CREATE TABLE `categorias` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- Dumping data for table `categorias`
+-- Despejando dados para a tabela `categorias`
 --
 
 INSERT INTO `categorias` (`id`, `id_usuario`, `nome`, `tipo`, `criada_em`) VALUES
 (1, 2, 'Teste', 'D', '2026-01-02 19:32:28'),
-(2, 2, 'teste', 'R', '2026-01-02 19:32:36'),
-(3, 3, 'Murilo', 'R', '2026-01-05 16:30:44');
+(2, 2, 'teste', 'R', '2026-01-02 19:32:36');
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `contas`
+-- Estrutura para tabela `contas`
 --
 
 CREATE TABLE `contas` (
@@ -60,17 +59,16 @@ CREATE TABLE `contas` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- Dumping data for table `contas`
+-- Despejando dados para a tabela `contas`
 --
 
 INSERT INTO `contas` (`id`, `id_usuario`, `nome`, `saldo_inicial`, `saldo_atual`, `criada_em`) VALUES
-(1, 2, '1212121', 100.00, 100.00, '2026-01-02 19:39:27'),
-(2, 3, 'Murilo', 100.00, 101.00, '2026-01-05 16:30:40');
+(1, 2, '1212121', 100.00, 100.00, '2026-01-02 19:39:27');
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `lancamentos`
+-- Estrutura para tabela `lancamentos`
 --
 
 CREATE TABLE `lancamentos` (
@@ -86,33 +84,16 @@ CREATE TABLE `lancamentos` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- Dumping data for table `lancamentos`
+-- Despejando dados para a tabela `lancamentos`
 --
 
 INSERT INTO `lancamentos` (`id`, `id_usuario`, `id_conta`, `id_categoria`, `tipo`, `valor`, `data`, `descricao`, `criado_em`) VALUES
-(1, 2, 1, 1, 'R', 120.00, '2026-01-03', 'teste', '2026-01-02 19:39:44'),
-(2, 3, 2, 3, 'R', 1.00, '2026-01-05', '', '2026-01-05 16:30:50');
+(1, 2, 1, 1, 'R', 120.00, '2026-01-03', 'teste', '2026-01-02 19:39:44');
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `orcamentos`
---
-
-CREATE TABLE `orcamentos` (
-  `id` int(11) NOT NULL,
-  `id_usuario` int(11) NOT NULL,
-  `id_categoria` int(11) NOT NULL,
-  `ano` int(11) NOT NULL,
-  `mes` int(11) NOT NULL,
-  `valor` decimal(10,2) NOT NULL,
-  `criado_em` timestamp NOT NULL DEFAULT current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `usuarios`
+-- Estrutura para tabela `usuarios`
 --
 
 CREATE TABLE `usuarios` (
@@ -125,34 +106,33 @@ CREATE TABLE `usuarios` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- Dumping data for table `usuarios`
+-- Despejando dados para a tabela `usuarios`
 --
 
 INSERT INTO `usuarios` (`id`, `nome`, `email`, `senha`, `tipo`, `criado_em`) VALUES
 (1, 'Admin', 'admin@teste.com', '<?= password_hash(\"123456\", PASSWORD_DEFAULT) ?>', 'pessoal', '2026-01-02 19:10:29'),
-(2, 'Murilo', 'm@gmail.com', '$2y$10$1jhCVFkYIF2R8h.4rPMmxONr6XsSsUIoFav8Y79muVvTlO3KlEHIO', 'pessoal', '2026-01-02 19:15:31'),
-(3, 'Murilo', 'murlxff@gmail.com', '$2y$10$R/TCDmdBipHRMnosbIffe.OHgcT/QyuUQk2KwrrCFC.Wi1dMTGGBO', 'pessoal', '2026-01-05 16:30:05');
+(2, 'Murilo', 'm@gmail.com', '$2y$10$1jhCVFkYIF2R8h.4rPMmxONr6XsSsUIoFav8Y79muVvTlO3KlEHIO', 'pessoal', '2026-01-02 19:15:31');
 
 --
--- Indexes for dumped tables
+-- Índices para tabelas despejadas
 --
 
 --
--- Indexes for table `categorias`
+-- Índices de tabela `categorias`
 --
 ALTER TABLE `categorias`
   ADD PRIMARY KEY (`id`),
   ADD KEY `id_usuario` (`id_usuario`);
 
 --
--- Indexes for table `contas`
+-- Índices de tabela `contas`
 --
 ALTER TABLE `contas`
   ADD PRIMARY KEY (`id`),
   ADD KEY `id_usuario` (`id_usuario`);
 
 --
--- Indexes for table `lancamentos`
+-- Índices de tabela `lancamentos`
 --
 ALTER TABLE `lancamentos`
   ADD PRIMARY KEY (`id`),
@@ -161,83 +141,63 @@ ALTER TABLE `lancamentos`
   ADD KEY `id_categoria` (`id_categoria`);
 
 --
--- Indexes for table `orcamentos`
---
-ALTER TABLE `orcamentos`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `id_usuario` (`id_usuario`,`id_categoria`,`ano`,`mes`),
-  ADD KEY `id_categoria` (`id_categoria`);
-
---
--- Indexes for table `usuarios`
+-- Índices de tabela `usuarios`
 --
 ALTER TABLE `usuarios`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `email` (`email`);
 
 --
--- AUTO_INCREMENT for dumped tables
+-- AUTO_INCREMENT para tabelas despejadas
 --
 
 --
--- AUTO_INCREMENT for table `categorias`
+-- AUTO_INCREMENT de tabela `categorias`
 --
 ALTER TABLE `categorias`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
--- AUTO_INCREMENT for table `contas`
+-- AUTO_INCREMENT de tabela `contas`
 --
 ALTER TABLE `contas`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
--- AUTO_INCREMENT for table `lancamentos`
+-- AUTO_INCREMENT de tabela `lancamentos`
 --
 ALTER TABLE `lancamentos`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT de tabela `usuarios`
+--
+ALTER TABLE `usuarios`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
--- AUTO_INCREMENT for table `orcamentos`
---
-ALTER TABLE `orcamentos`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `usuarios`
---
-ALTER TABLE `usuarios`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
-
---
--- Constraints for dumped tables
+-- Restrições para tabelas despejadas
 --
 
 --
--- Constraints for table `categorias`
+-- Restrições para tabelas `categorias`
 --
 ALTER TABLE `categorias`
   ADD CONSTRAINT `categorias_ibfk_1` FOREIGN KEY (`id_usuario`) REFERENCES `usuarios` (`id`);
 
 --
--- Constraints for table `contas`
+-- Restrições para tabelas `contas`
 --
 ALTER TABLE `contas`
   ADD CONSTRAINT `contas_ibfk_1` FOREIGN KEY (`id_usuario`) REFERENCES `usuarios` (`id`);
 
 --
--- Constraints for table `lancamentos`
+-- Restrições para tabelas `lancamentos`
 --
 ALTER TABLE `lancamentos`
   ADD CONSTRAINT `lancamentos_ibfk_1` FOREIGN KEY (`id_usuario`) REFERENCES `usuarios` (`id`),
   ADD CONSTRAINT `lancamentos_ibfk_2` FOREIGN KEY (`id_conta`) REFERENCES `contas` (`id`),
   ADD CONSTRAINT `lancamentos_ibfk_3` FOREIGN KEY (`id_categoria`) REFERENCES `categorias` (`id`);
-
---
--- Constraints for table `orcamentos`
---
-ALTER TABLE `orcamentos`
-  ADD CONSTRAINT `orcamentos_ibfk_1` FOREIGN KEY (`id_categoria`) REFERENCES `categorias` (`id`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

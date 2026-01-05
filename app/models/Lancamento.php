@@ -116,5 +116,24 @@ public static function filtrar($pdo, $idUsuario, $filtros)
 
     return $stmt->fetchAll();
 }
+public static function totalPorCategoriaMes($pdo, $idUsuario, $ano, $mes)
+{
+    $stmt = $pdo->prepare("
+        SELECT id_categoria, SUM(valor) AS total
+        FROM lancamentos
+        WHERE id_usuario = ?
+          AND tipo = 'D'
+          AND YEAR(data) = ?
+          AND MONTH(data) = ?
+        GROUP BY id_categoria
+    ");
+    $stmt->execute([$idUsuario, $ano, $mes]);
+
+    $resultado = [];
+    foreach ($stmt->fetchAll() as $row) {
+        $resultado[$row['id_categoria']] = (float)$row['total'];
+    }
+    return $resultado;
+}
 
 }

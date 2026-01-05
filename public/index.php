@@ -7,6 +7,7 @@ require_once __DIR__ . '/../app/controllers/ContaController.php';
 require_once __DIR__ . '/../app/controllers/CategoriaController.php';
 require_once __DIR__ . '/../app/controllers/LancamentoController.php';
 require_once __DIR__ . '/../app/controllers/DashboardController.php';
+require_once __DIR__ . '/../app/controllers/OrcamentoController.php';
 
 $rota = $_GET['url'] ?? 'login';
 
@@ -81,6 +82,17 @@ switch ($rota) {
         require '../app/views/auth_guard.php';
         LancamentoController::delete($pdo);
         break;
+
+    case 'orcamentos':
+        require '../app/views/auth_guard.php';
+        OrcamentoController::index($pdo);
+        break;
+
+    case 'orcamentos-store':
+        require '../app/views/auth_guard.php';
+        OrcamentoController::store($pdo);
+        break;
+
 
     default:
         echo "Página não encontrada";

@@ -100,5 +100,22 @@ public static function resumoPorCategoria($pdo, $idUsuario, $filtros)
 
     return $stmt->fetchAll();
 }
+public static function resumoMensalLinha($pdo, $idUsuario, $ano)
+{
+    $stmt = $pdo->prepare("
+        SELECT 
+            MONTH(data) AS mes,
+            tipo,
+            SUM(valor) AS total
+        FROM lancamentos
+        WHERE id_usuario = ?
+          AND YEAR(data) = ?
+        GROUP BY MONTH(data), tipo
+        ORDER BY MONTH(data)
+    ");
+
+    $stmt->execute([$idUsuario, $ano]);
+    return $stmt->fetchAll();
+}
 
 }
