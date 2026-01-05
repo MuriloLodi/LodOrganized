@@ -1,3 +1,29 @@
+<?php
+require_once __DIR__ . '/../models/Orcamento.php';
+
+$anoAtual = (int)date('Y');
+$mesAtual = (int)date('m');
+$estourados  = Orcamento::estouradosNoMes($pdo, $_SESSION['usuario']['id'], $anoAtual, $mesAtual);
+$preventivos = Orcamento::preventivosNoMes($pdo, $_SESSION['usuario']['id'], $anoAtual, $mesAtual);
+
+$qtdAlertasOrcamento = count($estourados) + count($preventivos);
+
+$orcamentosEstourados = [];
+$qtdAlertasOrcamento = 0;
+
+if (isset($_SESSION['usuario'])) {
+    $orcamentosEstourados = Orcamento::estouradosNoMes(
+        $pdo,
+        $_SESSION['usuario']['id'],
+        $anoAtual,
+        $mesAtual
+    );
+
+    $qtdAlertasOrcamento = count($orcamentosEstourados);
+}
+?>
+
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -36,10 +62,18 @@
             <a href="/financas/public/?url=categorias" class="list-group-item list-group-item-action">
                 Categorias
             </a>
-            <a href="/financas/public/?url=orcamentos" class="list-group-item list-group-item-action">
-                Orçamento
-            </a>
+            <a href="/financas/public/?url=orcamentos"
+            class="list-group-item list-group-item-action d-flex justify-content-between align-items-center
+            <?= $qtdAlertasOrcamento > 0 ? 'fw-bold' : '' ?>">
 
+                Orçamento
+
+                <?php if ($qtdAlertasOrcamento > 0): ?>
+                    <span class="badge <?= count($estourados) > 0 ? 'bg-danger' : 'bg-warning' ?>">
+                        <?= $qtdAlertasOrcamento ?>
+                    </span>
+                <?php endif; ?>
+            </a>
         </div>
     </div>
 

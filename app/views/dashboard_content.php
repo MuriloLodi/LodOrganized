@@ -1,4 +1,87 @@
+<?php if (!empty($orcamentosEstourados)): ?>
+<div class="alert alert-danger">
+    <strong>⚠️ Orçamento estourado!</strong>
+    <ul class="mb-0">
+        <?php foreach ($orcamentosEstourados as $o): ?>
+            <li>
+                <?= htmlspecialchars($o['nome']) ?> —
+                <?= number_format($o['percentual'], 1) ?>%
+                (R$ <?= number_format($o['total_real'], 2, ',', '.') ?> /
+                 R$ <?= number_format($o['orcado'], 2, ',', '.') ?>)
+            </li>
+        <?php endforeach; ?>
+    </ul>
+    <a href="/financas/public/?url=orcamentos&ano=<?= date('Y') ?>&mes=<?= date('m') ?>"
+       class="btn btn-sm btn-light mt-2">
+       Ver orçamento
+    </a>
+</div>
+<?php endif; ?>
+<?php if (!empty($orcamentosPreventivo)): ?>
+<div class="alert alert-warning">
+    <strong>⚠️ Atenção!</strong> Você está perto de estourar o orçamento em:
+    <ul class="mb-0">
+        <?php foreach ($orcamentosPreventivo as $o): ?>
+            <li>
+                <?= htmlspecialchars($o['nome']) ?> —
+                <?= number_format($o['percentual'], 1) ?>%
+                (R$ <?= number_format($o['total_real'], 2, ',', '.') ?> /
+                R$ <?= number_format($o['orcado'], 2, ',', '.') ?>)
+            </li>
+        <?php endforeach; ?>
+    </ul>
+</div>
+<?php endif; ?>
+
+
 <h1 class="mb-4">Dashboard</h1>
+<?php if ($orcamentoGeral['orcado'] > 0): ?>
+<?php
+    $p = $orcamentoGeral['percentual'];
+
+    if ($p <= 70) {
+        $classe = 'bg-success';
+    } elseif ($p <= 100) {
+        $classe = 'bg-warning';
+    } else {
+        $classe = 'bg-danger';
+    }
+
+    $barra = min($p, 100);
+?>
+<div class="card mb-4">
+    <div class="card-body">
+        <h5 class="card-title mb-3">📊 Orçamento geral do mês</h5>
+
+        <div class="progress" style="height: 26px">
+            <div class="progress-bar <?= $classe ?>"
+                 style="width: <?= $barra ?>%">
+                <?= number_format($p, 1) ?>%
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-between mt-2">
+            <small>
+                Gasto: <strong>R$ <?= number_format($orcamentoGeral['real'], 2, ',', '.') ?></strong>
+            </small>
+            <small>
+                Orçado: <strong>R$ <?= number_format($orcamentoGeral['orcado'], 2, ',', '.') ?></strong>
+            </small>
+        </div>
+
+        <?php if ($p > 100): ?>
+            <div class="mt-2 text-danger fw-bold">
+                ⚠️ Você ultrapassou o orçamento do mês!
+            </div>
+        <?php endif; ?>
+    </div>
+</div>
+<?php else: ?>
+<div class="alert alert-info mb-4">
+    Defina orçamentos mensais para visualizar o consumo geral do mês.
+    <a href="/financas/public/?url=orcamentos" class="alert-link">Configurar orçamento</a>
+</div>
+<?php endif; ?>
 
 <p class="text-muted">
     Resumo de <?= date('m/Y') ?>

@@ -1,29 +1,26 @@
 <?php
 require_once __DIR__ . '/../models/Dashboard.php';
+require_once __DIR__ . '/../models/Orcamento.php';
 
 class DashboardController
 {
     public static function index($pdo)
     {
-        $idUsuario = $_SESSION['usuario']['id'];
+        $idUsuario = usuarioId();
+        $ano = (int)date('Y');
+        $mes = (int)date('m');
 
-        $ano = date('Y');
-        $mes = date('m');
+        $resumo       = Dashboard::resumoMensal($pdo, $idUsuario, $ano, $mes);
+        $saldoGeral   = Dashboard::saldoGeral($pdo, $idUsuario);
+        $linhaMensal  = Dashboard::resumoMensalLinha($pdo, $idUsuario, $ano);
 
-        // Resumo do mês (cards)
-        $resumo = Dashboard::resumoMensal($pdo, $idUsuario, $ano, $mes);
+        // 🔔 Alertas por categoria (se já implementou)
+        $orcamentosEstourados  = Orcamento::estouradosNoMes($pdo, $idUsuario, $ano, $mes);
+        $orcamentosPreventivo  = Orcamento::preventivosNoMes($pdo, $idUsuario, $ano, $mes);
 
-        // Saldo total (somatório das contas)
-        $saldoGeral = Dashboard::saldoGeral($pdo, $idUsuario);
-
-        // Linha mensal para gráfico executivo
-        $linhaMensal = Dashboard::resumoMensalLinha($pdo, $idUsuario, $ano);
-
-        // (Opcional) por categoria para futuras tabelas/pizza no dashboard
-        // Se você ainda não usa, pode comentar.
-        $porCategoria = Dashboard::resumoPorCategoria($pdo, $idUsuario, []);
-
-        // Mantém o padrão do seu projeto
+        // 📊 Resumo geral do orçamento
+        $orcamentoGeral = Orcamento::resumoGeralMes($pdo, $idUsuario, $ano, $mes);
+        
         require '../app/views/dashboard.php';
     }
 }

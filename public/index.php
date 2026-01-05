@@ -8,6 +8,7 @@ require_once __DIR__ . '/../app/controllers/CategoriaController.php';
 require_once __DIR__ . '/../app/controllers/LancamentoController.php';
 require_once __DIR__ . '/../app/controllers/DashboardController.php';
 require_once __DIR__ . '/../app/controllers/OrcamentoController.php';
+require_once __DIR__ . '/../app/helpers/helpers.php';
 
 $rota = $_GET['url'] ?? 'login';
 

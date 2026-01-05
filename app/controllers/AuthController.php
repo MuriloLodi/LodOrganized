@@ -24,7 +24,8 @@ class AuthController
             exit;
         }
 
-        // Login OK
+        session_regenerate_id(true);
+
         $_SESSION['usuario'] = [
             'id'    => $usuario['id'],
             'nome'  => $usuario['nome'],

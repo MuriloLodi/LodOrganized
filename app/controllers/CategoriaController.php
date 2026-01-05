@@ -5,11 +5,7 @@ class CategoriaController
 {
     public static function index($pdo)
     {
-        $categorias = Categoria::allByUsuario(
-            $pdo,
-            $_SESSION['usuario']['id']
-        );
-
+        $categorias = Categoria::allByUsuario($pdo, usuarioId());
         require '../app/views/categorias/index.php';
     }
 
@@ -24,14 +20,10 @@ class CategoriaController
             exit;
         }
 
-        Categoria::create(
-            $pdo,
-            $_SESSION['usuario']['id'],
-            $nome,
-            $tipo
-        );
+        Categoria::create($pdo, usuarioId(), $nome, $tipo);
 
         header("Location: /financas/public/?url=categorias");
         exit;
     }
 }
+

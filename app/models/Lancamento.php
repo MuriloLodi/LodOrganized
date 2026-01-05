@@ -46,7 +46,7 @@ class Lancamento
     return $stmt->fetch();
 }
 
-public static function update($pdo, $id, $dados)
+public static function update($pdo, $id, $idUsuario, $dados)
 {
     $stmt = $pdo->prepare("
         UPDATE lancamentos SET
@@ -56,7 +56,7 @@ public static function update($pdo, $id, $dados)
             valor = ?,
             data = ?,
             descricao = ?
-        WHERE id = ?
+        WHERE id = ? AND id_usuario = ?
     ");
 
     return $stmt->execute([
@@ -66,15 +66,22 @@ public static function update($pdo, $id, $dados)
         $dados['valor'],
         $dados['data'],
         $dados['descricao'],
-        $id
+        $id,
+        $idUsuario
     ]);
 }
 
-public static function delete($pdo, $id)
+
+
+public static function delete($pdo, $id, $idUsuario)
 {
-    $stmt = $pdo->prepare("DELETE FROM lancamentos WHERE id = ?");
-    return $stmt->execute([$id]);
+    $stmt = $pdo->prepare("
+        DELETE FROM lancamentos 
+        WHERE id = ? AND id_usuario = ?
+    ");
+    return $stmt->execute([$id, $idUsuario]);
 }
+
 public static function filtrar($pdo, $idUsuario, $filtros)
 {
     $sql = "
@@ -102,6 +109,11 @@ public static function filtrar($pdo, $idUsuario, $filtros)
     if (!empty($filtros['id_conta'])) {
         $sql .= " AND l.id_conta = ?";
         $params[] = $filtros['id_conta'];
+    }
+
+    if (!empty($filtros['tipo'])) {
+        $sql .= " AND l.tipo = ?";
+        $params[] = $filtros['tipo'];
     }
 
     if (!empty($filtros['id_categoria'])) {
@@ -134,6 +146,14 @@ public static function totalPorCategoriaMes($pdo, $idUsuario, $ano, $mes)
         $resultado[$row['id_categoria']] = (float)$row['total'];
     }
     return $resultado;
+}
+function normalizaValor($valor)
+{
+    $valor = trim($valor);
+    $valor = str_replace(['R$', ' '], '', $valor);
+    $valor = str_replace('.', '', $valor);
+    $valor = str_replace(',', '.', $valor);
+    return (float)$valor;
 }
 
 }
