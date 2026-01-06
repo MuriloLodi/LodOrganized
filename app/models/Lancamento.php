@@ -177,5 +177,24 @@ public static function allByMes(PDO $pdo, int $idUsuario, int $ano, int $mes): a
     return $stmt->fetchAll();
 }
 
+public static function topDespesasMes(PDO $pdo, int $idUsuario, int $ano, int $mes, int $limit = 5): array
+{
+    $stmt = $pdo->prepare("
+        SELECT 
+            cat.nome AS categoria,
+            SUM(l.valor) AS total
+        FROM lancamentos l
+        JOIN categorias cat ON cat.id = l.id_categoria
+        WHERE l.id_usuario = ?
+          AND l.tipo = 'D'
+          AND YEAR(l.data) = ?
+          AND MONTH(l.data) = ?
+        GROUP BY cat.id, cat.nome
+        ORDER BY total DESC
+        LIMIT {$limit}
+    ");
+    $stmt->execute([$idUsuario, $ano, $mes]);
+    return $stmt->fetchAll();
+}
 
 }
