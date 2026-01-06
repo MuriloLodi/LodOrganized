@@ -56,18 +56,33 @@ if (isset($_SESSION['usuario'])) {
             <a href="/financas/public/?url=lancamentos" class="list-group-item list-group-item-action">
                 Lançamentos
             </a>
-            <a href="/financas/public/?url=relatorio-csv&ano=<?= date('Y') ?>&mes=<?= date('m') ?>"
-                class="btn btn-outline-success">
-                📥 Exportar relatório CSV
-            </a>
-            <a href="/financas/public/?url=relatorio-pdf&ano=<?= date('Y') ?>&mes=<?= date('m') ?>"
-                class="btn btn-outline-danger">
-                📄 Exportar PDF
-            </a>
-            <a href="/financas/public/?url=relatorio-pdf-executivo&ano=<?= date('Y') ?>&mes=<?= date('m') ?>"
-                class="btn btn-dark">
-                📊 PDF Executivo
-            </a>
+            <a class="list-group-item list-group-item-action"
+   data-bs-toggle="collapse"
+   href="#menuRelatorios"
+   role="button"
+   aria-expanded="false"
+   aria-controls="menuRelatorios">
+    Relatórios
+</a>
+
+<div class="collapse" id="menuRelatorios">
+    <a href="/financas/public/?url=relatorio-csv&ano=<?= date('Y') ?>&mes=<?= date('m') ?>"
+       class="list-group-item list-group-item-action ">
+        📥 CSV mensal
+    </a>
+
+    <a href="/financas/public/?url=relatorio-pdf&ano=<?= date('Y') ?>&mes=<?= date('m') ?>"
+       class="list-group-item list-group-item-action ">
+        📄 PDF simples
+    </a>
+
+    <a href="/financas/public/?url=relatorio-pdf-executivo&ano=<?= date('Y') ?>&mes=<?= date('m') ?>"
+       class="list-group-item list-group-item-action ">
+        📊 PDF executivo
+    </a>
+</div>
+
+
 
             <a href="/financas/public/?url=categorias" class="list-group-item list-group-item-action">
                 Categorias
