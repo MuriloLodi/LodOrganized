@@ -5,25 +5,57 @@ class CategoriaController
 {
     public static function index($pdo)
     {
-        $categorias = Categoria::allByUsuario($pdo, usuarioId());
+        $categorias = Categoria::allByUsuario(
+            $pdo,
+            $_SESSION['usuario']['id']
+        );
+
         require '../app/views/categorias/index.php';
     }
 
     public static function store($pdo)
     {
-        $nome = trim($_POST['nome'] ?? '');
-        $tipo = $_POST['tipo'] ?? '';
+        Categoria::create(
+            $pdo,
+            $_SESSION['usuario']['id'],
+            $_POST['nome'],
+            $_POST['tipo'],
+            $_POST['icone'] ?? 'bi-tag'
+        );
 
-        if (!$nome || !in_array($tipo, ['R', 'D'])) {
-            $_SESSION['erro'] = "Informe nome e tipo da categoria.";
-            header("Location: /financas/public/?url=categorias");
-            exit;
+        header("Location: /financas/public/?url=categorias");
+        exit;
+    }
+
+    public static function update($pdo)
+    {
+        Categoria::update(
+            $pdo,
+            $_SESSION['usuario']['id'],
+            $_POST['id'],
+            $_POST['nome'],
+            $_POST['icone']
+        );
+
+        header("Location: /financas/public/?url=categorias");
+        exit;
+    }
+
+    public static function delete($pdo)
+    {
+        try {
+            Categoria::delete(
+                $pdo,
+                $_SESSION['usuario']['id'],
+                $_POST['id']
+            );
+        } catch (Exception $e) {
+            $_SESSION['erro'] = $e->getMessage();
         }
-
-        Categoria::create($pdo, usuarioId(), $nome, $tipo);
 
         header("Location: /financas/public/?url=categorias");
         exit;
     }
 }
+
 

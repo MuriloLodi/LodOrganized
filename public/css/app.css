@@ -99,3 +99,31 @@ body {
         margin-left: 0;
     }
 }
+/* ====== TABLE MOBILE FIX ====== */
+.table-responsive-mobile {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.table-responsive-mobile table {
+    min-width: 700px; /* força largura mínima */
+}
+/* Sidebar sempre com altura total e scroll no mobile */
+#sidebar-wrapper{
+  min-height: 100vh;
+  max-height: 100vh;
+  overflow-y: auto;
+}
+
+/* Evita quebrar/estourar no mobile */
+.list-group-item{
+  white-space: nowrap;
+}
+
+/* Quando tiver muito item, melhor scroll do que cortar */
+@media (max-width: 991.98px){
+  #sidebar-wrapper{
+    width: 280px;
+  }
+}

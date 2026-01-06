@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Criar conta • Finanças</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="/financas/public/css/app.css">
 </head>
 <body style="display: flex;">

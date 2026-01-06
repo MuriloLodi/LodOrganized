@@ -47,5 +47,18 @@ class Conta
     $stmt = $pdo->prepare($sql);
     $stmt->execute([$valor, $idConta]);
 }
+public static function canDelete(PDO $pdo, int $usuarioId, int $contaId): bool
+{
+    $stmt = $pdo->prepare("
+        SELECT COUNT(*) 
+        FROM lancamentos 
+        WHERE id_usuario = ? 
+          AND id_conta = ?
+    ");
+
+    $stmt->execute([$usuarioId, $contaId]);
+
+    return $stmt->fetchColumn() == 0;
+}
 
 }

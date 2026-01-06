@@ -1,4 +1,32 @@
 <?php
+$dt = new DateTime('now', new DateTimeZone('America/Sao_Paulo'));
+
+if (class_exists('IntlDateFormatter')) {
+    $fmt = new IntlDateFormatter(
+        'pt_BR',
+        IntlDateFormatter::NONE,
+        IntlDateFormatter::NONE,
+        $dt->getTimezone()->getName(),
+        IntlDateFormatter::GREGORIAN,
+        "MMMM 'de' yyyy"
+    );
+
+    $mesAno = $fmt->format($dt);
+
+    // "janeiro de 2026" -> "Janeiro de 2026"
+    if (function_exists('mb_convert_case')) {
+        $mesAno = mb_convert_case($mesAno, MB_CASE_TITLE, 'UTF-8');
+    } else {
+        $mesAno = ucfirst($mesAno);
+    }
+} else {
+    // fallback caso não exista ext-intl
+    $meses = [1=>'Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+    $mesAno = $meses[(int)$dt->format('n')] . ' de ' . $dt->format('Y');
+}
+?>
+
+<?php
 $receitas = (float)($resumo['receitas'] ?? 0);
 $despesas = (float)($resumo['despesas'] ?? 0);
 $saldoMes = (float)($resumo['saldo'] ?? ($receitas - $despesas));
@@ -7,256 +35,223 @@ $receitasAnt = (float)($resumoAnt['receitas'] ?? 0);
 $despesasAnt = (float)($resumoAnt['despesas'] ?? 0);
 $saldoAnt = (float)($resumoAnt['saldo'] ?? ($receitasAnt - $despesasAnt));
 
-function badgeDelta($atual, $anterior) {
-    $diff = $atual - $anterior;
-    if (abs($diff) < 0.01) return '<span class="badge bg-secondary">igual</span>';
-    $cls = $diff > 0 ? 'bg-success' : 'bg-danger';
-    $sinal = $diff > 0 ? '+' : '-';
-    return '<span class="badge '.$cls.'">'.$sinal.' R$ '.number_format(abs($diff), 2, ',', '.').'</span>';
+function deltaBadge($atual, $ant) {
+    $d = $atual - $ant;
+    if (abs($d) < 0.01) return '<span class="badge bg-light text-dark">=</span>';
+    return '<span class="badge '.($d>0?'bg-success':'bg-danger').'">'.($d>0?'+':'-').' R$ '.number_format(abs($d),2,',','.').'</span>';
 }
 
-$orcadoTotal = (float)($orcamentoGeral['orcado'] ?? 0);
-$realTotal   = (float)($orcamentoGeral['real'] ?? 0);
-$percentOrc  = (float)($orcamentoGeral['percentual'] ?? 0);
+$orcado = (float)($orcamentoGeral['orcado'] ?? 0);
+$real   = (float)($orcamentoGeral['real'] ?? 0);
+$perc   = (float)($orcamentoGeral['percentual'] ?? 0);
 
-$classeOrc = 'bg-secondary';
-if ($orcadoTotal > 0) {
-    if ($percentOrc <= 70) $classeOrc = 'bg-success';
-    elseif ($percentOrc <= 100) $classeOrc = 'bg-warning';
-    else $classeOrc = 'bg-danger';
-}
+$orcClass = 'bg-success';
+if ($perc > 70) $orcClass = 'bg-warning';
+if ($perc > 100) $orcClass = 'bg-danger';
 ?>
 
-<div class="d-flex justify-content-between align-items-center mb-3">
+<style>
+/* === BASE === */
+.dashboard-wrap {
+    max-width: 1400px;
+    margin: auto;
+}
+.soft-card {
+    border-radius: 20px;
+    background: #fff;
+    box-shadow: 0 15px 35px rgba(0,0,0,.08);
+    border: none;
+}
+.kpi {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.kpi-title {
+    font-size: 12px;
+    text-transform: uppercase;
+    color: #6c757d;
+    letter-spacing: .6px;
+}
+.kpi-value {
+    font-size: 34px;
+    font-weight: 800;
+}
+.kpi-sub {
+    font-size: 13px;
+    color: #6c757d;
+}
+.progress-xl {
+    height: 32px;
+    border-radius: 20px;
+    overflow: hidden;
+}
+.progress-xl .progress-bar {
+    font-size: 14px;
+    font-weight: 600;
+}
+.section-title {
+    font-weight: 700;
+    font-size: 18px;
+}
+.list-row {
+    padding: 12px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+@media (max-width: 768px) {
+    .kpi-value { font-size: 26px; }
+    .btn1 { width: 100%; }
+}
+</style>
+
+<div class="dashboard-wrap">
+
+<!-- HEADER -->
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
     <div>
-        <h1 class="mb-0">Dashboard</h1>
-        <div class="text-muted">Visão geral do mês atual</div>
+        <h1 class="fw-bold mb-1">Resumo financeiro</h1>
+        <div class="text-muted">
+            <?= htmlspecialchars($mesAno) ?>
+        </div>
     </div>
 
     <div class="d-flex gap-2 flex-wrap">
-        <a class="btn btn-primary" href="/financas/public/?url=lancamentos">+ Lançamento</a>
-        <a class="btn btn-outline-secondary" href="/financas/public/?url=orcamentos">Ajustar Orçamento</a>
-        <a class="btn btn-outline-success" href="/financas/public/?url=relatorio-csv&ano=<?= date('Y') ?>&mes=<?= date('m') ?>">CSV</a>
-        <a class="btn btn-dark" href="/financas/public/?url=relatorio-pdf-executivo&ano=<?= date('Y') ?>&mes=<?= date('m') ?>">PDF Executivo</a>
+        <a class="btn btn1 btn-primary btn-lg" href="/financas/public/?url=lancamentos">+ Lançamento</a>
+        <a class="btn btn1 btn-outline-secondary" href="/financas/public/?url=orcamentos">Orçamentos</a>
+        <a class="btn btn1 btn-dark" href="/financas/public/?url=relatorio-pdf-executivo">PDF</a>
     </div>
 </div>
 
-<!-- ALERTAS (TOP PRIORIDADE) -->
-<?php if (!empty($alertas)): ?>
-    <?php foreach ($alertas as $a): ?>
-        <div class="alert alert-<?= $a['tipo'] ?> fw-bold">
-            <?= htmlspecialchars($a['msg']) ?>
-        </div>
-    <?php endforeach; ?>
-<?php endif; ?>
+<!-- ALERTAS -->
+<?php foreach (($alertas ?? []) as $a): ?>
+    <div class="alert alert-<?= $a['tipo'] ?> fw-semibold">
+        <?= htmlspecialchars($a['msg']) ?>
+    </div>
+<?php endforeach; ?>
 
-<!-- CARDS EXECUTIVOS -->
-<div class="row g-3 mb-4">
+<!-- KPIs -->
+<div class="row g-4 mb-4">
     <div class="col-md-3">
-        <div class="card h-100 border-success">
-            <div class="card-body">
-                <div class="text-muted small">Receitas (mês)</div>
-                <div class="display-6 text-success">R$ <?= number_format($receitas, 2, ',', '.') ?></div>
-                <div class="mt-2"><?= badgeDelta($receitas, $receitasAnt) ?> <span class="text-muted small">vs mês anterior</span></div>
+        <div class="soft-card p-4">
+            <div class="kpi">
+                <div class="kpi-title">Receitas</div>
+                <div class="kpi-value text-success">R$ <?= number_format($receitas,2,',','.') ?></div>
+                <div class="kpi-sub"><?= deltaBadge($receitas,$receitasAnt) ?> vs mês anterior</div>
             </div>
         </div>
     </div>
 
     <div class="col-md-3">
-        <div class="card h-100 border-danger">
-            <div class="card-body">
-                <div class="text-muted small">Despesas (mês)</div>
-                <div class="display-6 text-danger">R$ <?= number_format($despesas, 2, ',', '.') ?></div>
-                <div class="mt-2"><?= badgeDelta($despesas, $despesasAnt) ?> <span class="text-muted small">vs mês anterior</span></div>
+        <div class="soft-card p-4">
+            <div class="kpi">
+                <div class="kpi-title">Despesas</div>
+                <div class="kpi-value text-danger">R$ <?= number_format($despesas,2,',','.') ?></div>
+                <div class="kpi-sub"><?= deltaBadge($despesas,$despesasAnt) ?> vs mês anterior</div>
             </div>
         </div>
     </div>
 
     <div class="col-md-3">
-        <div class="card h-100 border-primary">
-            <div class="card-body">
-                <div class="text-muted small">Saldo (mês)</div>
-                <div class="display-6 <?= $saldoMes >= 0 ? 'text-primary' : 'text-danger' ?>">
-                    R$ <?= number_format($saldoMes, 2, ',', '.') ?>
+        <div class="soft-card p-4">
+            <div class="kpi">
+                <div class="kpi-title">Saldo</div>
+                <div class="kpi-value <?= $saldoMes>=0?'text-primary':'text-danger' ?>">
+                    R$ <?= number_format($saldoMes,2,',','.') ?>
                 </div>
-                <div class="mt-2"><?= badgeDelta($saldoMes, $saldoAnt) ?> <span class="text-muted small">vs mês anterior</span></div>
+                <div class="kpi-sub"><?= deltaBadge($saldoMes,$saldoAnt) ?> vs mês anterior</div>
             </div>
         </div>
     </div>
 
     <div class="col-md-3">
-        <div class="card h-100 border-warning">
-            <div class="card-body">
-                <div class="text-muted small">Orçamento (mês)</div>
-                <div class="display-6"><?= number_format($percentOrc, 1) ?>%</div>
-                <div class="text-muted small">
-                    <?= $orcadoTotal > 0
-                        ? 'R$ '.number_format($realTotal,2,',','.').' / R$ '.number_format($orcadoTotal,2,',','.')
-                        : 'Defina orçamentos para visualizar' ?>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- BARRA GERAL DO ORÇAMENTO (VISUAL PRIORITÁRIO) -->
-<div class="card mb-4">
-    <div class="card-body">
-        <div class="d-flex justify-content-between align-items-center mb-2">
-            <strong>Consumo do orçamento (mês)</strong>
-            <a class="small text-decoration-none" href="/financas/public/?url=orcamentos">Ver detalhes</a>
-        </div>
-
-        <?php if ($orcadoTotal > 0): ?>
-            <div class="progress" style="height: 26px;">
-                <div class="progress-bar <?= $classeOrc ?>" style="width: <?= min($percentOrc, 100) ?>%">
-                    <?= number_format($percentOrc, 1) ?>%
-                </div>
-            </div>
-            <div class="d-flex justify-content-between mt-2 text-muted small">
-                <div>Gasto: <strong>R$ <?= number_format($realTotal, 2, ',', '.') ?></strong></div>
-                <div>Orçado: <strong>R$ <?= number_format($orcadoTotal, 2, ',', '.') ?></strong></div>
-            </div>
-            <?php if ($percentOrc > 100): ?>
-                <div class="mt-2 text-danger fw-bold">⚠️ Você ultrapassou o orçamento do mês.</div>
-            <?php endif; ?>
-        <?php else: ?>
-            <div class="alert alert-info mb-0">
-                Defina orçamentos mensais para ver a barra geral.
-                <a href="/financas/public/?url=orcamentos" class="alert-link">Configurar orçamento</a>
-            </div>
-        <?php endif; ?>
-    </div>
-</div>
-
-<div class="row g-3">
-    <!-- CATEGORIAS EM RISCO -->
-    <div class="col-lg-6">
-        <div class="card h-100">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <strong>Categorias em risco</strong>
-                    <a class="small text-decoration-none" href="/financas/public/?url=orcamentos">Ajustar</a>
-                </div>
-
-                <?php if (empty($categoriasRisco)): ?>
-                    <div class="text-muted">
-                        Nenhuma categoria em risco agora. ✅
+        <div class="soft-card p-4">
+            <div class="kpi">
+                <div class="kpi-title">Orçamento</div>
+                <div class="kpi-value"><?= number_format($perc,1) ?>%</div>
+                <div class="progress progress-xl mt-2">
+                    <div class="progress-bar <?= $orcClass ?>" style="width:<?= min($perc,100) ?>%">
+                        <?= number_format($perc,1) ?>%
                     </div>
-                <?php else: ?>
-                    <div class="list-group">
-                        <?php foreach (array_slice($categoriasRisco, 0, 6) as $c): ?>
-                            <div class="list-group-item d-flex justify-content-between align-items-center">
-                                <div>
-                                    <div class="fw-semibold">
-                                        <?= htmlspecialchars($c['nome']) ?>
-                                        <?php if ($c['status'] === 'danger'): ?>
-                                            <span class="badge bg-danger ms-2">estourado</span>
-                                        <?php else: ?>
-                                            <span class="badge bg-warning text-dark ms-2">80%+</span>
-                                        <?php endif; ?>
-                                    </div>
-                                    <div class="text-muted small">
-                                        R$ <?= number_format($c['total_real'],2,',','.') ?> / R$ <?= number_format($c['orcado'],2,',','.') ?>
-                                    </div>
-                                </div>
-                                <span class="badge <?= $c['status']==='danger'?'bg-danger':'bg-warning text-dark' ?>">
-                                    <?= number_format($c['percentual'],1) ?>%
-                                </span>
-                            </div>
-                        <?php endforeach; ?>
-                    </div>
-                <?php endif; ?>
+                </div>
             </div>
         </div>
     </div>
+</div>
 
-    <!-- TOP GASTOS -->
+<!-- ORÇAMENTO GERAL -->
+<div class="soft-card p-4 mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <div class="section-title">Consumo do orçamento</div>
+        <a href="/financas/public/?url=orcamentos">Ver detalhes</a>
+    </div>
+
+    <?php if ($orcado > 0): ?>
+        <div class="progress progress-xl">
+            <div class="progress-bar <?= $orcClass ?>" style="width:<?= min($perc,100) ?>%">
+                <?= number_format($perc,1) ?>%
+            </div>
+        </div>
+        <div class="d-flex justify-content-between text-muted mt-2">
+            <span>Gasto: <strong>R$ <?= number_format($real,2,',','.') ?></strong></span>
+            <span>Orçado: <strong>R$ <?= number_format($orcado,2,',','.') ?></strong></span>
+        </div>
+    <?php else: ?>
+        <div class="alert alert-info mb-0">Nenhum orçamento definido.</div>
+    <?php endif; ?>
+</div>
+
+<!-- LISTAS -->
+<div class="row g-4">
     <div class="col-lg-6">
-        <div class="card h-100">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <strong>Top gastos do mês</strong>
-                    <a class="small text-decoration-none" href="/financas/public/?url=lancamentos">Ver lançamentos</a>
-                </div>
+        <div class="soft-card p-4 h-100">
+            <div class="section-title mb-3">Categorias em risco</div>
 
-                <?php if (empty($topDespesas)): ?>
-                    <div class="text-muted">Sem despesas registradas neste mês.</div>
-                <?php else: ?>
-                    <?php
-                        $maxTop = (float)($topDespesas[0]['total'] ?? 1);
-                        if ($maxTop <= 0) $maxTop = 1;
-                    ?>
-                    <?php foreach ($topDespesas as $t): ?>
-                        <?php
-                            $nome = $t['categoria'] ?? '—';
-                            $total = (float)($t['total'] ?? 0);
-                            $w = min(($total / $maxTop) * 100, 100);
-                        ?>
-                        <div class="mb-3">
-                            <div class="d-flex justify-content-between">
-                                <div class="fw-semibold"><?= htmlspecialchars($nome) ?></div>
-                                <div>R$ <?= number_format($total,2,',','.') ?></div>
-                            </div>
-                            <div class="progress" style="height: 10px;">
-                                <div class="progress-bar" style="width: <?= $w ?>%"></div>
-                            </div>
+            <?php if (empty($categoriasRisco)): ?>
+                <div class="text-muted">Tudo sob controle 🎯</div>
+            <?php else: ?>
+                <?php foreach ($categoriasRisco as $c): ?>
+                    <div class="list-row d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong><?= htmlspecialchars($c['nome']) ?></strong><br>
+                            <small class="text-muted">
+                                R$ <?= number_format($c['total_real'],2,',','.') ?>
+                                / R$ <?= number_format($c['orcado'],2,',','.') ?>
+                            </small>
                         </div>
-                    <?php endforeach; ?>
-                <?php endif; ?>
+                        <span class="badge <?= $c['status']==='danger'?'bg-danger':'bg-warning text-dark' ?>">
+                            <?= number_format($c['percentual'],1) ?>%
+                        </span>
+                    </div>
+                <?php endforeach; ?>
+            <?php endif; ?>
+        </div>
+    </div>
 
-                <div class="mt-3 d-flex gap-2 flex-wrap">
-                    <a class="btn btn-outline-primary btn-sm" href="/financas/public/?url=lancamentos">Adicionar despesa</a>
-                    <a class="btn btn-outline-secondary btn-sm" href="/financas/public/?url=categorias">Gerenciar categorias</a>
-                    <a class="btn btn-outline-secondary btn-sm" href="/financas/public/?url=contas">Gerenciar contas</a>
-                </div>
-            </div>
+    <div class="col-lg-6">
+        <div class="soft-card p-4 h-100">
+            <div class="section-title mb-3">Maiores despesas</div>
+
+            <?php if (empty($topDespesas)): ?>
+                <div class="text-muted">Sem despesas neste mês.</div>
+            <?php else: ?>
+                <?php
+                $max = max(array_column($topDespesas,'total')) ?: 1;
+                foreach ($topDespesas as $t):
+                    $w = min(($t['total']/$max)*100,100);
+                ?>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span><?= htmlspecialchars($t['categoria']) ?></span>
+                            <strong>R$ <?= number_format($t['total'],2,',','.') ?></strong>
+                        </div>
+                        <div class="progress" style="height:10px">
+                            <div class="progress-bar" style="width:<?= $w ?>%"></div>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            <?php endif; ?>
         </div>
     </div>
 </div>
 
-<!-- EVOLUÇÃO (GRÁFICO) -->
-<div class="card mt-4">
-    <div class="card-body">
-        <div class="d-flex justify-content-between align-items-center mb-2">
-            <strong>Evolução no ano (<?= (int)date('Y') ?>)</strong>
-            <span class="text-muted small">Receitas x Despesas</span>
-        </div>
-
-        <canvas id="chartEvolucao" height="90"></canvas>
-    </div>
 </div>
-
-<script>
-(function(){
-    const linha = <?= json_encode($linhaMensal ?? []) ?>;
-
-    // Espera o formato típico: [{mes:1, receitas:..., despesas:...}, ...]
-    const labels = linha.map(x => {
-        const m = (x.mes ?? x['mes'] ?? '');
-        return String(m).padStart(2,'0');
-    });
-
-    const receitas = linha.map(x => Number(x.receitas ?? x['receitas'] ?? 0));
-    const despesas = linha.map(x => Number(x.despesas ?? x['despesas'] ?? 0));
-
-    const ctx = document.getElementById('chartEvolucao');
-    if (!ctx || typeof Chart === 'undefined') return;
-
-    new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels,
-            datasets: [
-                { label: 'Receitas', data: receitas, tension: 0.25 },
-                { label: 'Despesas', data: despesas, tension: 0.25 }
-            ]
-        },
-        options: {
-            responsive: true,
-            plugins: { legend: { display: true } },
-            scales: { y: { beginAtZero: true } }
-        }
-    });
-})();
-</script>
