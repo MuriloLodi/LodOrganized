@@ -1,129 +1,88 @@
+/* ===== BASE DO APP (NÃO MEXE NO LOGIN) ===== */
 * {
-    box-sizing: border-box;
-    font-family: Arial, Helvetica, sans-serif;
+  box-sizing: border-box;
 }
+
 html, body {
-    height: 100%;
+  height: 100%;
 }
+
 body {
-    background: #f4f6f8;
-    margin: 0;
-    height: 100vh;
-    align-items: center;
-    justify-content: center;
+  margin: 0;
+  background: #f6f7fb;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
 }
+
 #wrapper {
-    min-height: 100vh;
+  min-height: 100vh;
 }
 
 #page-content-wrapper {
-    min-height: 100vh;
-    overflow-x: hidden;
-}
-.login-container {
-    width: 100%;
-    max-width: 360px;
+  min-height: 100vh;
+  overflow-x: hidden;
 }
 
-.login-card {
-    background: #fff;
-    padding: 30px;
-    border-radius: 8px;
-    box-shadow: 0 10px 30px rgba(0,0,0,.08);
-}
-
-.login-card h2 {
-    margin-bottom: 20px;
-    text-align: center;
-}
-
-.login-card input {
-    width: 100%;
-    padding: 12px;
-    margin-bottom: 12px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-}
-
-.login-card button {
-    width: 100%;
-    padding: 12px;
-    border: none;
-    background: #2563eb;
-    color: #fff;
-    font-weight: bold;
-    border-radius: 6px;
-    cursor: pointer;
-}
-
-.login-card button:hover {
-    background: #1e4ed8;
-}
-
-.alert {
-    background: #fee2e2;
-    color: #991b1b;
-    padding: 10px;
-    border-radius: 6px;
-    margin-bottom: 12px;
-    text-align: center;
-}
-
-.small {
-    margin-top: 15px;
-    text-align: center;
-    font-size: 14px;
-}
-#wrapper {
-    min-height: 100vh;
-}
-
-#sidebar-wrapper {
-    width: 240px;
-}
-
-#wrapper.toggled #sidebar-wrapper {
-    margin-left: -240px;
-}
-
-#page-content-wrapper {
-    flex: 1;
-}
-
-@media (max-width: 768px) {
-    #sidebar-wrapper {
-        margin-left: -240px;
-    }
-
-    #wrapper.toggled #sidebar-wrapper {
-        margin-left: 0;
-    }
-}
 /* ====== TABLE MOBILE FIX ====== */
 .table-responsive-mobile {
-    width: 100%;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .table-responsive-mobile table {
-    min-width: 700px; /* força largura mínima */
+  min-width: 700px; /* força largura mínima */
 }
-/* Sidebar sempre com altura total e scroll no mobile */
-#sidebar-wrapper{
+
+/* ===== Sidebar (apenas scroll, sem regras antigas de margin-left) ===== */
+#sidebar-wrapper {
   min-height: 100vh;
   max-height: 100vh;
   overflow-y: auto;
 }
 
-/* Evita quebrar/estourar no mobile */
-.list-group-item{
+/* NÃO force nowrap no app inteiro (isso quebra várias telas) */
+/* .list-group-item { white-space: nowrap; } */
+
+/* Se quiser evitar quebra só no menu, use uma classe no menu e aplique lá */
+.sidebar-link span {
   white-space: nowrap;
 }
 
-/* Quando tiver muito item, melhor scroll do que cortar */
-@media (max-width: 991.98px){
-  #sidebar-wrapper{
+/* Ajuste largura do sidebar no mobile (somente se seu layout usa transform) */
+@media (max-width: 991.98px) {
+  #sidebar-wrapper {
     width: 280px;
   }
+}
+
+/* ===== Avatar ===== */
+.avatar-sm {
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  object-fit: cover;
+  border: 1px solid rgba(0,0,0,.08);
+}
+
+.avatar-lg {
+  width: 84px;
+  height: 84px;
+  border-radius: 999px;
+  object-fit: cover;
+  border: 1px solid rgba(0,0,0,.08);
+}
+
+.avatar-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: #2b2b2b;
+  background: #f1f3f5;
+}
+
+/* Segurança extra pra não estourar no layout */
+img {
+  max-width: 100%;
+  height: auto;
 }

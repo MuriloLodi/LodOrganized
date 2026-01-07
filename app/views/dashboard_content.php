@@ -1,257 +1,285 @@
 <?php
-$dt = new DateTime('now', new DateTimeZone('America/Sao_Paulo'));
+function moeda($v){ return 'R$ '.number_format((float)$v, 2, ',', '.'); }
 
-if (class_exists('IntlDateFormatter')) {
-    $fmt = new IntlDateFormatter(
-        'pt_BR',
-        IntlDateFormatter::NONE,
-        IntlDateFormatter::NONE,
-        $dt->getTimezone()->getName(),
-        IntlDateFormatter::GREGORIAN,
-        "MMMM 'de' yyyy"
-    );
-
-    $mesAno = $fmt->format($dt);
-
-    // "janeiro de 2026" -> "Janeiro de 2026"
-    if (function_exists('mb_convert_case')) {
-        $mesAno = mb_convert_case($mesAno, MB_CASE_TITLE, 'UTF-8');
-    } else {
-        $mesAno = ucfirst($mesAno);
-    }
-} else {
-    // fallback caso não exista ext-intl
-    $meses = [1=>'Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
-    $mesAno = $meses[(int)$dt->format('n')] . ' de ' . $dt->format('Y');
-}
-?>
-
-<?php
-$receitas = (float)($resumo['receitas'] ?? 0);
-$despesas = (float)($resumo['despesas'] ?? 0);
-$saldoMes = (float)($resumo['saldo'] ?? ($receitas - $despesas));
-
-$receitasAnt = (float)($resumoAnt['receitas'] ?? 0);
-$despesasAnt = (float)($resumoAnt['despesas'] ?? 0);
-$saldoAnt = (float)($resumoAnt['saldo'] ?? ($receitasAnt - $despesasAnt));
-
-function deltaBadge($atual, $ant) {
-    $d = $atual - $ant;
-    if (abs($d) < 0.01) return '<span class="badge bg-light text-dark">=</span>';
-    return '<span class="badge '.($d>0?'bg-success':'bg-danger').'">'.($d>0?'+':'-').' R$ '.number_format(abs($d),2,',','.').'</span>';
+function badgeTrend($diff){
+    if (abs($diff) < 0.01) return '<span class="badge bg-secondary-subtle text-secondary border">igual</span>';
+    if ($diff > 0) return '<span class="badge bg-danger-subtle text-danger border">▲ '.moeda(abs($diff)).'</span>';
+    return '<span class="badge bg-success-subtle text-success border">▼ '.moeda(abs($diff)).'</span>';
 }
 
-$orcado = (float)($orcamentoGeral['orcado'] ?? 0);
-$real   = (float)($orcamentoGeral['real'] ?? 0);
-$perc   = (float)($orcamentoGeral['percentual'] ?? 0);
+// meses pt-br
+$meses = [
+  1=>'Janeiro',2=>'Fevereiro',3=>'Março',4=>'Abril',5=>'Maio',6=>'Junho',
+  7=>'Julho',8=>'Agosto',9=>'Setembro',10=>'Outubro',11=>'Novembro',12=>'Dezembro'
+];
 
-$orcClass = 'bg-success';
-if ($perc > 70) $orcClass = 'bg-warning';
-if ($perc > 100) $orcClass = 'bg-danger';
+$anoSel = (int)($ano ?? date('Y'));
+$mesSel = (int)($mes ?? date('m'));
+$idContaSel = $idConta ?? null;
 ?>
 
 <style>
-/* === BASE === */
-.dashboard-wrap {
-    max-width: 1400px;
-    margin: auto;
+/* ===== DASHBOARD CLEAN ===== */
+.dash-title { font-weight: 800; letter-spacing: -0.4px; }
+.kpi-card { border: 1px solid rgba(0,0,0,.06); border-radius: 16px; }
+.kpi-label { font-size: .78rem; color: #6c757d; }
+.kpi-value { font-size: 1.55rem; font-weight: 800; letter-spacing: -0.3px; }
+.kpi-sub { font-size: .82rem; color: #6c757d; }
+
+.section-title { font-weight: 800; letter-spacing: -0.2px; }
+.card-soft { border: 1px solid rgba(0,0,0,.06); border-radius: 16px; }
+
+.bar-row { display:flex; align-items:center; gap:12px; }
+.bar-name { min-width: 160px; max-width: 160px; white-space: nowrap; overflow:hidden; text-overflow: ellipsis; font-weight: 600; }
+.bar-wrap { flex: 1; }
+.bar-total { min-width: 120px; text-align: right; font-weight: 700; }
+@media (max-width: 576px){
+  .bar-name { min-width: 120px; max-width: 120px; }
+  .bar-total { min-width: 95px; }
 }
-.soft-card {
-    border-radius: 20px;
-    background: #fff;
-    box-shadow: 0 15px 35px rgba(0,0,0,.08);
-    border: none;
-}
-.kpi {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-.kpi-title {
-    font-size: 12px;
-    text-transform: uppercase;
-    color: #6c757d;
-    letter-spacing: .6px;
-}
-.kpi-value {
-    font-size: 34px;
-    font-weight: 800;
-}
-.kpi-sub {
-    font-size: 13px;
-    color: #6c757d;
-}
-.progress-xl {
-    height: 32px;
-    border-radius: 20px;
-    overflow: hidden;
-}
-.progress-xl .progress-bar {
-    font-size: 14px;
-    font-weight: 600;
-}
-.section-title {
-    font-weight: 700;
-    font-size: 18px;
-}
-.list-row {
-    padding: 12px 0;
-    border-bottom: 1px solid #f0f0f0;
-}
-@media (max-width: 768px) {
-    .kpi-value { font-size: 26px; }
-    .btn1 { width: 100%; }
-}
+
+/* metas */
+.meta-item { padding: 12px 0; border-bottom: 1px solid rgba(0,0,0,.06); }
+.meta-item:last-child{ border-bottom:0; }
 </style>
 
-<div class="dashboard-wrap">
-
-<!-- HEADER -->
-<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+<div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
     <div>
-        <h1 class="fw-bold mb-1">Resumo financeiro</h1>
-        <div class="text-muted">
-            <?= htmlspecialchars($mesAno) ?>
-        </div>
+        <h1 class="mb-1 dash-title">Dashboard</h1>
+        <div class="text-muted">Visão geral • <?= $meses[$mesSel] ?> / <?= $anoSel ?></div>
     </div>
 
     <div class="d-flex gap-2 flex-wrap">
-        <a class="btn btn1 btn-primary btn-lg" href="/financas/public/?url=lancamentos">+ Lançamento</a>
-        <a class="btn btn1 btn-outline-secondary" href="/financas/public/?url=orcamentos">Orçamentos</a>
-        <a class="btn btn1 btn-dark" href="/financas/public/?url=relatorio-pdf-executivo">PDF</a>
+        <a class="btn btn-primary" href="/financas/public/?url=lancamentos">+ Lançamento</a>
+        <a class="btn btn-outline-secondary" href="/financas/public/?url=orcamentos">Orçamentos</a>
+        <a class="btn btn-outline-success" href="/financas/public/?url=relatorio-csv&ano=<?= $anoSel ?>&mes=<?= str_pad($mesSel,2,'0',STR_PAD_LEFT) ?>">CSV</a>
+        <a class="btn btn-dark" href="/financas/public/?url=relatorio-pdf-executivo&ano=<?= $anoSel ?>&mes=<?= str_pad($mesSel,2,'0',STR_PAD_LEFT) ?>">PDF</a>
     </div>
 </div>
 
-<!-- ALERTAS -->
-<?php foreach (($alertas ?? []) as $a): ?>
-    <div class="alert alert-<?= $a['tipo'] ?> fw-semibold">
-        <?= htmlspecialchars($a['msg']) ?>
-    </div>
-<?php endforeach; ?>
+<?php if (!empty($_SESSION['erro'])): ?>
+  <div class="alert alert-danger">
+    <?= htmlspecialchars($_SESSION['erro']); unset($_SESSION['erro']); ?>
+  </div>
+<?php endif; ?>
 
-<!-- KPIs -->
-<div class="row g-4 mb-4">
-    <div class="col-md-3">
-        <div class="soft-card p-4">
-            <div class="kpi">
-                <div class="kpi-title">Receitas</div>
-                <div class="kpi-value text-success">R$ <?= number_format($receitas,2,',','.') ?></div>
-                <div class="kpi-sub"><?= deltaBadge($receitas,$receitasAnt) ?> vs mês anterior</div>
-            </div>
+<!-- FILTRO RÁPIDO -->
+<div class="card-soft p-3 mb-4">
+  <form class="row g-2 align-items-end" method="GET" action="/financas/public/">
+    <input type="hidden" name="url" value="dashboard">
+
+    <div class="col-6 col-md-2">
+      <label class="form-label kpi-label">Mês</label>
+      <select name="mes" class="form-select">
+        <?php for($m=1;$m<=12;$m++): ?>
+          <option value="<?= $m ?>" <?= $m===$mesSel?'selected':'' ?>><?= $meses[$m] ?></option>
+        <?php endfor; ?>
+      </select>
+    </div>
+
+    <div class="col-6 col-md-2">
+      <label class="form-label kpi-label">Ano</label>
+      <input type="number" name="ano" class="form-control" value="<?= $anoSel ?>">
+    </div>
+
+    <div class="col-12 col-md-5">
+      <label class="form-label kpi-label">Conta</label>
+      <select name="id_conta" class="form-select">
+        <option value="">Todas as contas</option>
+        <?php foreach(($contas ?? []) as $c): ?>
+          <option value="<?= (int)$c['id'] ?>" <?= (!empty($idContaSel) && (int)$idContaSel===(int)$c['id'])?'selected':'' ?>>
+            <?= htmlspecialchars($c['nome']) ?>
+          </option>
+        <?php endforeach; ?>
+      </select>
+    </div>
+
+    <div class="col-12 col-md-3 d-flex gap-2">
+      <button class="btn btn-primary w-100">Aplicar</button>
+      <a class="btn btn-outline-secondary w-100" href="/financas/public/?url=dashboard">Hoje</a>
+    </div>
+  </form>
+</div>
+
+<!-- KPI GERAL (limpo) -->
+<div class="row g-3 mb-4">
+  <div class="col-md-4">
+    <div class="kpi-card p-3 h-100">
+      <div class="kpi-label">Receitas (mês)</div>
+      <div class="kpi-value text-success"><?= moeda($resumo['receitas'] ?? 0) ?></div>
+      <div class="kpi-sub">Somente lançamentos pagos</div>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="kpi-card p-3 h-100">
+      <div class="kpi-label">Despesas (mês)</div>
+      <div class="kpi-value text-danger"><?= moeda($resumo['despesas'] ?? 0) ?></div>
+      <div class="kpi-sub">Somente lançamentos pagos</div>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="kpi-card p-3 h-100">
+      <div class="kpi-label">Saldo (mês)</div>
+      <?php $saldo = (float)($resumo['saldo'] ?? 0); ?>
+      <div class="kpi-value <?= $saldo>=0?'text-primary':'text-danger' ?>"><?= moeda($saldo) ?></div>
+      <div class="kpi-sub">Receitas − Despesas</div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <!-- CARDS POR CONTA -->
+  <div class="col-lg-7">
+    <div class="card-soft p-3 h-100">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <div class="section-title">Contas</div>
+          <div class="text-muted small">Saldo atual + variação do mês</div>
         </div>
-    </div>
+      </div>
 
-    <div class="col-md-3">
-        <div class="soft-card p-4">
-            <div class="kpi">
-                <div class="kpi-title">Despesas</div>
-                <div class="kpi-value text-danger">R$ <?= number_format($despesas,2,',','.') ?></div>
-                <div class="kpi-sub"><?= deltaBadge($despesas,$despesasAnt) ?> vs mês anterior</div>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-md-3">
-        <div class="soft-card p-4">
-            <div class="kpi">
-                <div class="kpi-title">Saldo</div>
-                <div class="kpi-value <?= $saldoMes>=0?'text-primary':'text-danger' ?>">
-                    R$ <?= number_format($saldoMes,2,',','.') ?>
+      <?php if (empty($cardsContas)): ?>
+        <div class="text-muted">Cadastre uma conta para começar.</div>
+      <?php else: ?>
+        <div class="row g-2">
+          <?php foreach($cardsContas as $cc): ?>
+            <?php
+              $delta = (float)$cc['delta_mes'];
+              $deltaBadge = ($delta >= 0)
+                ? '<span class="badge bg-primary-subtle text-primary border">+'.moeda($delta).'</span>'
+                : '<span class="badge bg-danger-subtle text-danger border">-'.moeda(abs($delta)).'</span>';
+            ?>
+            <div class="col-12 col-md-6">
+              <div class="kpi-card p-3 h-100">
+                <div class="d-flex justify-content-between align-items-start">
+                  <div>
+                    <div class="fw-semibold"><?= htmlspecialchars($cc['nome']) ?></div>
+                    <div class="kpi-label mt-1">Saldo atual</div>
+                    <div class="kpi-value <?= ((float)$cc['saldo_atual']>=0)?'text-success':'text-danger' ?>">
+                      <?= moeda($cc['saldo_atual']) ?>
+                    </div>
+                  </div>
+                  <div class="text-end">
+                    <div class="kpi-label">Variação mês</div>
+                    <?= $deltaBadge ?>
+                  </div>
                 </div>
-                <div class="kpi-sub"><?= deltaBadge($saldoMes,$saldoAnt) ?> vs mês anterior</div>
-            </div>
-        </div>
-    </div>
 
-    <div class="col-md-3">
-        <div class="soft-card p-4">
-            <div class="kpi">
-                <div class="kpi-title">Orçamento</div>
-                <div class="kpi-value"><?= number_format($perc,1) ?>%</div>
-                <div class="progress progress-xl mt-2">
-                    <div class="progress-bar <?= $orcClass ?>" style="width:<?= min($perc,100) ?>%">
-                        <?= number_format($perc,1) ?>%
-                    </div>
+                <div class="mt-2 d-flex justify-content-between small text-muted">
+                  <span>Receitas: <b class="text-success"><?= moeda($cc['mes_receitas']) ?></b></span>
+                  <span>Despesas: <b class="text-danger"><?= moeda($cc['mes_despesas']) ?></b></span>
                 </div>
+              </div>
             </div>
+          <?php endforeach; ?>
         </div>
+      <?php endif; ?>
     </div>
-</div>
+  </div>
 
-<!-- ORÇAMENTO GERAL -->
-<div class="soft-card p-4 mb-4">
-    <div class="d-flex justify-content-between align-items-center mb-2">
-        <div class="section-title">Consumo do orçamento</div>
-        <a href="/financas/public/?url=orcamentos">Ver detalhes</a>
-    </div>
+  <!-- TOP CATEGORIAS -->
+  <div class="col-lg-5">
+    <div class="card-soft p-3 h-100">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <div class="section-title">Top categorias do mês</div>
+          <div class="text-muted small">Despesas • tendência vs mês anterior</div>
+        </div>
+        <a class="small text-decoration-none" href="/financas/public/?url=orcamentos">ver orçamento</a>
+      </div>
 
-    <?php if ($orcado > 0): ?>
-        <div class="progress progress-xl">
-            <div class="progress-bar <?= $orcClass ?>" style="width:<?= min($perc,100) ?>%">
-                <?= number_format($perc,1) ?>%
+      <?php if (empty($topCategorias)): ?>
+        <div class="text-muted">Sem despesas nesse período.</div>
+      <?php else: ?>
+        <?php foreach($topCategorias as $t): ?>
+          <div class="mb-3">
+            <div class="d-flex justify-content-between align-items-center">
+              <div class="fw-semibold" style="max-width:65%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                <?= htmlspecialchars($t['nome']) ?>
+              </div>
+              <div class="text-end d-flex align-items-center gap-2">
+                <span class="fw-bold"><?= moeda($t['total']) ?></span>
+                <?= badgeTrend($t['diff']) ?>
+              </div>
             </div>
-        </div>
-        <div class="d-flex justify-content-between text-muted mt-2">
-            <span>Gasto: <strong>R$ <?= number_format($real,2,',','.') ?></strong></span>
-            <span>Orçado: <strong>R$ <?= number_format($orcado,2,',','.') ?></strong></span>
-        </div>
-    <?php else: ?>
-        <div class="alert alert-info mb-0">Nenhum orçamento definido.</div>
-    <?php endif; ?>
+
+            <div class="progress mt-2" style="height: 10px;">
+              <div class="progress-bar" style="width: <?= (float)$t['w'] ?>%"></div>
+            </div>
+
+            <div class="text-muted small mt-1">
+              mês anterior: <?= moeda($t['anterior']) ?>
+            </div>
+          </div>
+        <?php endforeach; ?>
+      <?php endif; ?>
+    </div>
+  </div>
 </div>
 
-<!-- LISTAS -->
-<div class="row g-4">
-    <div class="col-lg-6">
-        <div class="soft-card p-4 h-100">
-            <div class="section-title mb-3">Categorias em risco</div>
+<!-- METAS -->
+<div class="card-soft p-3 mt-3">
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <div>
+      <div class="section-title">Metas do mês</div>
+      <div class="text-muted small">Ex: gastar até R$ X em Alimentação</div>
+    </div>
+  </div>
 
-            <?php if (empty($categoriasRisco)): ?>
-                <div class="text-muted">Tudo sob controle 🎯</div>
-            <?php else: ?>
-                <?php foreach ($categoriasRisco as $c): ?>
-                    <div class="list-row d-flex justify-content-between align-items-center">
-                        <div>
-                            <strong><?= htmlspecialchars($c['nome']) ?></strong><br>
-                            <small class="text-muted">
-                                R$ <?= number_format($c['total_real'],2,',','.') ?>
-                                / R$ <?= number_format($c['orcado'],2,',','.') ?>
-                            </small>
-                        </div>
-                        <span class="badge <?= $c['status']==='danger'?'bg-danger':'bg-warning text-dark' ?>">
-                            <?= number_format($c['percentual'],1) ?>%
-                        </span>
-                    </div>
-                <?php endforeach; ?>
-            <?php endif; ?>
-        </div>
+  <!-- criar meta -->
+  <form class="row g-2 align-items-end mb-3" method="POST" action="/financas/public/?url=dashboard-meta-store">
+    <input type="hidden" name="ano" value="<?= $anoSel ?>">
+    <input type="hidden" name="mes" value="<?= $mesSel ?>">
+
+    <div class="col-12 col-md-6">
+      <label class="form-label kpi-label">Categoria (Despesa)</label>
+      <select name="id_categoria" class="form-select" required>
+        <option value="">Selecione</option>
+        <?php foreach(($categoriasDespesa ?? []) as $c): ?>
+          <option value="<?= (int)$c['id'] ?>"><?= htmlspecialchars($c['nome']) ?></option>
+        <?php endforeach; ?>
+      </select>
     </div>
 
-    <div class="col-lg-6">
-        <div class="soft-card p-4 h-100">
-            <div class="section-title mb-3">Maiores despesas</div>
-
-            <?php if (empty($topDespesas)): ?>
-                <div class="text-muted">Sem despesas neste mês.</div>
-            <?php else: ?>
-                <?php
-                $max = max(array_column($topDespesas,'total')) ?: 1;
-                foreach ($topDespesas as $t):
-                    $w = min(($t['total']/$max)*100,100);
-                ?>
-                    <div class="mb-3">
-                        <div class="d-flex justify-content-between">
-                            <span><?= htmlspecialchars($t['categoria']) ?></span>
-                            <strong>R$ <?= number_format($t['total'],2,',','.') ?></strong>
-                        </div>
-                        <div class="progress" style="height:10px">
-                            <div class="progress-bar" style="width:<?= $w ?>%"></div>
-                        </div>
-                    </div>
-                <?php endforeach; ?>
-            <?php endif; ?>
-        </div>
+    <div class="col-7 col-md-3">
+      <label class="form-label kpi-label">Limite (R$)</label>
+      <input name="valor_limite" class="form-control money-br" inputmode="numeric" placeholder="0,00" required>
     </div>
-</div>
 
+    <div class="col-5 col-md-3">
+      <button class="btn btn-primary w-100">Salvar meta</button>
+    </div>
+  </form>
+
+  <?php if (empty($metas)): ?>
+    <div class="text-muted">Nenhuma meta definida para este mês.</div>
+  <?php else: ?>
+    <?php foreach($metas as $m): ?>
+      <?php
+        $cls = 'bg-success';
+        $txt = 'text-success';
+        if ($m['status'] === 'warning') { $cls = 'bg-warning'; $txt = 'text-warning'; }
+        if ($m['status'] === 'danger')  { $cls = 'bg-danger';  $txt = 'text-danger'; }
+      ?>
+      <div class="meta-item">
+        <div class="d-flex justify-content-between align-items-center">
+          <div class="fw-semibold"><?= htmlspecialchars($m['nome']) ?></div>
+          <div class="text-end">
+            <div class="fw-bold"><?= moeda($m['real']) ?> <span class="text-muted">/ <?= moeda($m['limite']) ?></span></div>
+            <div class="small <?= $txt ?>">
+              <?= number_format((float)$m['pct'], 1, ',', '.') ?>%
+              <?php if ($m['status']==='warning'): ?> • alerta (80%+)<?php endif; ?>
+              <?php if ($m['status']==='danger'): ?> • estourou<?php endif; ?>
+            </div>
+          </div>
+        </div>
+
+        <div class="progress mt-2" style="height: 12px;">
+          <div class="progress-bar <?= $cls ?>" style="width: <?= (float)$m['barra'] ?>%"></div>
+        </div>
+      </div>
+    <?php endforeach; ?>
+  <?php endif; ?>
 </div>

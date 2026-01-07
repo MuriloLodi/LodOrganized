@@ -11,6 +11,7 @@ require_once __DIR__ . '/../app/controllers/OrcamentoController.php';
 require_once __DIR__ . '/../app/controllers/RelatorioController.php';
 require_once __DIR__ . '/../app/helpers/helpers.php';
 require_once __DIR__ . '/../app/controllers/PropostaController.php';
+require_once __DIR__ . '/../app/controllers/PerfilController.php';
 
 $rota = $_GET['url'] ?? 'login';
 
@@ -33,7 +34,7 @@ switch ($rota) {
         require '../app/views/auth_guard.php';
         ContaController::store($pdo);
         break;
-        
+
     case 'categorias':
         require '../app/views/auth_guard.php';
         CategoriaController::index($pdo);
@@ -60,7 +61,66 @@ switch ($rota) {
     case 'relatorio-csv':
         RelatorioController::exportCsv($pdo);
         break;
-        
+    case 'lancamentos-transferencia-store':
+        require '../app/views/auth_guard.php';
+        LancamentoController::storeTransferencia($pdo);
+        break;
+
+    case 'lancamentos-parcelas-store':
+        require '../app/views/auth_guard.php';
+        LancamentoController::storeParcelas($pdo);
+        break;
+
+    case 'recorrencias-store':
+        require '../app/views/auth_guard.php';
+        LancamentoController::storeRecorrencia($pdo);
+        break;
+
+    case 'recorrencias-gerar-mes':
+        require '../app/views/auth_guard.php';
+        LancamentoController::gerarRecorrenciasMes($pdo);
+        break;
+
+    case 'lancamentos-toggle-status':
+        require '../app/views/auth_guard.php';
+        LancamentoController::toggleStatus($pdo);
+        break;
+
+    case 'anexos-upload':
+        require '../app/views/auth_guard.php';
+        LancamentoController::uploadAnexo($pdo);
+        break;
+
+    case 'anexos-delete':
+        require '../app/views/auth_guard.php';
+        LancamentoController::deleteAnexo($pdo);
+        break;
+    case 'dashboard-meta-store':
+        require '../app/views/auth_guard.php';
+        DashboardController::salvarMeta($pdo);
+        break;
+
+
+    case 'relatorios':
+        require '../app/views/auth_guard.php';
+        RelatorioController::index($pdo);
+        break;
+
+    case 'relatorios-csv':
+        require '../app/views/auth_guard.php';
+        RelatorioController::exportCsv($pdo);
+        break;
+
+    case 'relatorios-pdf':
+        require '../app/views/auth_guard.php';
+        RelatorioController::exportPdf($pdo);
+        break;
+
+    case 'relatorios-pdf-executivo':
+        require '../app/views/auth_guard.php';
+        RelatorioController::exportPdfExecutivo($pdo);
+        break;
+
     case 'relatorio-pdf-executivo':
         RelatorioController::exportPdfExecutivo($pdo);
         break;
@@ -73,6 +133,31 @@ switch ($rota) {
         require '../app/views/auth_guard.php';
         LancamentoController::index($pdo);
         break;
+
+    case 'perfil':
+        require '../app/views/auth_guard.php';
+        require_once __DIR__ . '/../app/controllers/PerfilController.php';
+        PerfilController::index($pdo);
+        break;
+
+    case 'perfil-update':
+        require '../app/views/auth_guard.php';
+        require_once __DIR__ . '/../app/controllers/PerfilController.php';
+        PerfilController::update($pdo);
+        break;
+
+    case 'perfil-avatar':
+        require '../app/views/auth_guard.php';
+        require_once __DIR__ . '/../app/controllers/PerfilController.php';
+        PerfilController::updateAvatar($pdo);
+        break;
+
+    case 'perfil-avatar-delete':
+        require '../app/views/auth_guard.php';
+        require_once __DIR__ . '/../app/controllers/PerfilController.php';
+        PerfilController::deleteAvatar($pdo);
+        break;
+
 
     case 'lancamentos-store':
         require '../app/views/auth_guard.php';
@@ -122,7 +207,7 @@ switch ($rota) {
         require '../app/views/auth_guard.php';
         ContaController::delete($pdo);
         break;
-    
+
     case 'propostas':
         require '../app/views/auth_guard.php';
         PropostaController::index($pdo);

@@ -1,129 +1,168 @@
 <?php
-require_once __DIR__ . '/../models/Lancamento.php';
-require_once __DIR__ . '/../libs/dompdf/autoload.inc.php';
-
-use Dompdf\Dompdf;
+require_once __DIR__ . '/../models/Relatorio.php';
+require_once __DIR__ . '/../models/Conta.php';
+require_once __DIR__ . '/../models/Categoria.php';
 
 class RelatorioController
 {
-    public static function exportCsv($pdo)
+    private static function getFiltrosFromRequest(): array
     {
-        $idUsuario = usuarioId();
+        // padrões: mês atual
         $ano = (int)($_GET['ano'] ?? date('Y'));
         $mes = (int)($_GET['mes'] ?? date('m'));
 
-        $dados = Lancamento::allByMes($pdo, $idUsuario, $ano, $mes);
+        $dataInicio = $_GET['data_inicio'] ?? '';
+        $dataFim    = $_GET['data_fim'] ?? '';
 
-        header('Content-Type: text/csv; charset=utf-8');
-        header("Content-Disposition: attachment; filename=relatorio_{$mes}_{$ano}.csv");
-
-        $out = fopen('php://output', 'w');
-
-        // Cabeçalho
-        fputcsv($out, [
-            'Data',
-            'Descrição',
-            'Tipo',
-            'Conta',
-            'Categoria',
-            'Valor'
-        ], ';');
-
-        $totalReceita = 0;
-        $totalDespesa = 0;
-
-        foreach ($dados as $row) {
-            if ($row['tipo'] === 'R') {
-                $totalReceita += $row['valor'];
-            } else {
-                $totalDespesa += $row['valor'];
-            }
-
-            fputcsv($out, [
-                date('d/m/Y', strtotime($row['data'])),
-                $row['descricao'],
-                $row['tipo'] === 'R' ? 'Receita' : 'Despesa',
-                $row['conta'],
-                $row['categoria'],
-                number_format($row['valor'], 2, ',', '.')
-            ], ';');
+        // se usuário não informou data manual, usa mês/ano
+        if ($dataInicio === '' && $dataFim === '') {
+            $dataInicio = sprintf('%04d-%02d-01', $ano, $mes);
+            $ultimoDia  = date('t', strtotime($dataInicio));
+            $dataFim    = sprintf('%04d-%02d-%02d', $ano, $mes, $ultimoDia);
         }
 
-        // Linha em branco
-        fputcsv($out, [], ';');
+        return [
+            'ano'         => $ano,
+            'mes'         => $mes,
+            'data_inicio' => $dataInicio,
+            'data_fim'    => $dataFim,
+            'id_conta'    => $_GET['id_conta'] ?? '',
+            'id_categoria'=> $_GET['id_categoria'] ?? '',
+            'tipo'        => $_GET['tipo'] ?? '',
+            'status'      => $_GET['status'] ?? '',
+            'q'           => trim($_GET['q'] ?? ''), // busca no front
+        ];
+    }
 
-        // Totais
-        fputcsv($out, ['TOTAL RECEITAS', '', '', '', '', number_format($totalReceita, 2, ',', '.')], ';');
-        fputcsv($out, ['TOTAL DESPESAS', '', '', '', '', number_format($totalDespesa, 2, ',', '.')], ';');
-        fputcsv($out, ['SALDO', '', '', '', '', number_format($totalReceita - $totalDespesa, 2, ',', '.')], ';');
+    public static function index(PDO $pdo)
+    {
+        $idUsuario = (int)($_SESSION['usuario']['id'] ?? 0);
+        $f = self::getFiltrosFromRequest();
+
+        $contas = Conta::allByUsuario($pdo, $idUsuario);
+        $categorias = Categoria::allByUsuario($pdo, $idUsuario);
+
+        $lancamentos = Relatorio::filtrarLancamentos($pdo, $idUsuario, $f);
+        $resumo = Relatorio::resumo($pdo, $idUsuario, $f);
+        $porCategoria = Relatorio::porCategoria($pdo, $idUsuario, $f);
+        $porConta = Relatorio::porConta($pdo, $idUsuario, $f);
+
+        $titulo = "Relatórios";
+        $view = __DIR__ . '/../views/relatorios/index_content.php';
+        require __DIR__ . '/../views/layout.php';
+    }
+
+    public static function exportCsv(PDO $pdo)
+    {
+        $idUsuario = (int)($_SESSION['usuario']['id'] ?? 0);
+        $f = self::getFiltrosFromRequest();
+        $rows = Relatorio::filtrarLancamentos($pdo, $idUsuario, $f);
+
+        $nome = sprintf("relatorio_%04d-%02d.csv", (int)$f['ano'], (int)$f['mes']);
+
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename="'.$nome.'"');
+
+        $out = fopen('php://output', 'w');
+        fputcsv($out, ['Data', 'Tipo', 'Status', 'Conta', 'Categoria', 'Descrição', 'Valor'], ';');
+
+        foreach ($rows as $r) {
+            fputcsv($out, [
+                date('d/m/Y', strtotime($r['data'])),
+                $r['tipo'] === 'R' ? 'Receita' : 'Despesa',
+                $r['status'] ?? 'pago',
+                $r['conta'] ?? '',
+                $r['categoria'] ?? '',
+                $r['descricao'] ?? '',
+                number_format((float)$r['valor'], 2, ',', '.'),
+            ], ';');
+        }
 
         fclose($out);
         exit;
     }
-      public static function exportPdf($pdo)
+
+    private static function dompdfAvailable(): bool
     {
-        $idUsuario = usuarioId();
-        $ano = (int)($_GET['ano'] ?? date('Y'));
-        $mes = (int)($_GET['mes'] ?? date('m'));
+        // ajuste aqui se seu dompdf está em outro lugar
+        $autoload1 = __DIR__ . '/../libs/dompdf/autoload.inc.php';
+        $autoload2 = __DIR__ . '/../libs/dompdf/vendor/autoload.php';
 
-        $dados = Lancamento::allByMes($pdo, $idUsuario, $ano, $mes);
+        return file_exists($autoload1) || file_exists($autoload2);
+    }
 
-        // HTML do PDF
+    private static function includeDompdf(): void
+    {
+        $autoload1 = __DIR__ . '/../libs/dompdf/autoload.inc.php';
+        $autoload2 = __DIR__ . '/../libs/dompdf/vendor/autoload.php';
+
+        if (file_exists($autoload1)) {
+            require_once $autoload1;
+            return;
+        }
+        if (file_exists($autoload2)) {
+            require_once $autoload2;
+            return;
+        }
+    }
+
+    public static function exportPdf(PDO $pdo)
+    {
+        if (!self::dompdfAvailable()) {
+            $_SESSION['erro'] = "Dompdf não encontrado no projeto. Envie a pasta do dompdf junto.";
+            header("Location: /financas/public/?url=relatorios");
+            exit;
+        }
+
+        self::includeDompdf();
+        $idUsuario = (int)($_SESSION['usuario']['id'] ?? 0);
+        $f = self::getFiltrosFromRequest();
+
+        $rows = Relatorio::filtrarLancamentos($pdo, $idUsuario, $f);
+        $resumo = Relatorio::resumo($pdo, $idUsuario, $f);
+
         ob_start();
-        require __DIR__ . '/../views/relatorios/pdf.php';
+        require __DIR__ . '/../views/relatorios/pdf_simples.php';
         $html = ob_get_clean();
 
-        $dompdf = new Dompdf([
-            'isRemoteEnabled' => true
-        ]);
-
-        $dompdf->loadHtml($html, 'UTF-8');
+        $dompdf = new Dompdf\Dompdf(['isRemoteEnabled' => true]);
+        $dompdf->loadHtml($html);
         $dompdf->setPaper('A4', 'portrait');
         $dompdf->render();
 
-        $dompdf->stream(
-            "relatorio_{$mes}_{$ano}.pdf",
-            ['Attachment' => true]
-        );
+        $nome = sprintf("relatorio_simples_%04d-%02d.pdf", (int)$f['ano'], (int)$f['mes']);
+        $dompdf->stream($nome, ["Attachment" => true]);
         exit;
     }
-    public static function exportPdfExecutivo($pdo)
-{
-    $idUsuario = usuarioId();
-    $ano = (int)($_GET['ano'] ?? date('Y'));
-    $mes = (int)($_GET['mes'] ?? date('m'));
 
-    // Resumo financeiro
-    $resumo = Dashboard::resumoMensal($pdo, $idUsuario, $ano, $mes);
+    public static function exportPdfExecutivo(PDO $pdo)
+    {
+        if (!self::dompdfAvailable()) {
+            $_SESSION['erro'] = "Dompdf não encontrado no projeto. Envie a pasta do dompdf junto.";
+            header("Location: /financas/public/?url=relatorios");
+            exit;
+        }
 
-    // Orçamento geral
-    $orcamentoGeral = Orcamento::resumoGeralMes($pdo, $idUsuario, $ano, $mes);
+        self::includeDompdf();
+        $idUsuario = (int)($_SESSION['usuario']['id'] ?? 0);
+        $f = self::getFiltrosFromRequest();
 
-    // Estourados
-    $estourados = Orcamento::estouradosNoMes($pdo, $idUsuario, $ano, $mes);
+        $rows = Relatorio::filtrarLancamentos($pdo, $idUsuario, $f);
+        $resumo = Relatorio::resumo($pdo, $idUsuario, $f);
+        $porCategoria = Relatorio::porCategoria($pdo, $idUsuario, $f);
+        $porConta = Relatorio::porConta($pdo, $idUsuario, $f);
 
-    // Gastos por categoria
-    $gastosCategoria = Lancamento::totalPorCategoriaMes(
-        $pdo,
-        $idUsuario,
-        $ano,
-        $mes
-    );
+        ob_start();
+        require __DIR__ . '/../views/relatorios/pdf_executivo.php';
+        $html = ob_get_clean();
 
-    ob_start();
-    require __DIR__ . '/../views/relatorios/pdf_executivo.php';
-    $html = ob_get_clean();
+        $dompdf = new Dompdf\Dompdf(['isRemoteEnabled' => true]);
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
 
-    $dompdf = new Dompdf(['isRemoteEnabled' => true]);
-    $dompdf->loadHtml($html, 'UTF-8');
-    $dompdf->setPaper('A4', 'portrait');
-    $dompdf->render();
-
-    $dompdf->stream(
-        "relatorio_executivo_{$mes}_{$ano}.pdf",
-        ['Attachment' => true]
-    );
-    exit;
-}
-
+        $nome = sprintf("relatorio_executivo_%04d-%02d.pdf", (int)$f['ano'], (int)$f['mes']);
+        $dompdf->stream($nome, ["Attachment" => true]);
+        exit;
+    }
 }

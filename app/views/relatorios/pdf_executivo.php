@@ -1,160 +1,122 @@
+<?php
+function h($s){ return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
+
+$receitas = (float)($resumo['receitas'] ?? 0);
+$despesas = (float)($resumo['despesas'] ?? 0);
+$saldo    = (float)($resumo['saldo'] ?? 0);
+
+// top 8 categorias
+$topCat = array_slice($porCategoria ?? [], 0, 8);
+$maxCat = 1;
+foreach($topCat as $t){ $maxCat = max($maxCat, (float)$t['total']); }
+?>
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
+<meta charset="utf-8">
 <style>
-body {
-    font-family: DejaVu Sans, sans-serif;
-    font-size: 12px;
-}
-h1 {
-    text-align: center;
-    margin-bottom: 5px;
-}
-.periodo {
-    text-align: center;
-    margin-bottom: 20px;
-    color: #555;
-}
-.cards {
-    width: 100%;
-    margin-bottom: 20px;
-}
-.card {
-    border: 1px solid #ccc;
-    padding: 10px;
-    width: 23%;
-    display: inline-block;
-    vertical-align: top;
-    text-align: center;
-}
-.card h3 {
-    margin: 0;
-    font-size: 14px;
-}
-.card .valor {
-    font-size: 16px;
-    font-weight: bold;
-}
-.receita { color: #198754; }
-.despesa { color: #dc3545; }
-.saldo { color: #0d6efd; }
-
-.barra {
-    background: #eee;
-    border-radius: 5px;
-    overflow: hidden;
-    height: 18px;
-}
-.barra span {
-    display: block;
-    height: 100%;
-}
-.verde { background: #198754; }
-.amarelo { background: #ffc107; }
-.vermelho { background: #dc3545; }
-
-.titulo {
-    margin-top: 25px;
-    margin-bottom: 8px;
-    font-weight: bold;
-}
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-th, td {
-    border: 1px solid #ccc;
-    padding: 6px;
-}
-th {
-    background: #f2f2f2;
-}
+    body { font-family: Arial, sans-serif; font-size: 12px; color: #111; }
+    .header { margin-bottom: 12px; }
+    .title { font-size: 18px; font-weight: bold; margin-bottom: 4px; }
+    .sub { color:#555; }
+    .grid { width:100%; margin-top: 12px; }
+    .box { border:1px solid #ddd; padding:10px; margin-bottom:10px; border-radius:6px; }
+    .kpis { width:100%; }
+    .kpis td { border:0; padding:0 10px 0 0; }
+    .kpi-title { color:#666; font-size:11px; }
+    .kpi-value { font-size:16px; font-weight:bold; margin-top:2px; }
+    .pos { color:#0a7; } .neg { color:#c22; } .pri { color:#246; }
+    .bar { height:10px; background:#eee; border-radius:20px; overflow:hidden; margin-top:6px; }
+    .bar > div { height:10px; background:#777; }
+    table { width:100%; border-collapse:collapse; }
+    th, td { border:1px solid #ddd; padding:6px; }
+    th { background:#f3f3f3; text-align:left; }
+    .r { text-align:right; }
 </style>
 </head>
-
 <body>
 
-<h1>Relatório Executivo Financeiro</h1>
-<div class="periodo">
-    <?= str_pad($mes, 2, '0', STR_PAD_LEFT) ?>/<?= $ano ?>
+<div class="header">
+    <div class="title">Relatório Executivo</div>
+    <div class="sub">Período: <?= h($f['data_inicio']) ?> → <?= h($f['data_fim']) ?></div>
 </div>
 
-<!-- CARDS -->
-<div class="cards">
-    <div class="card">
-        <h3>Receitas</h3>
-        <div class="valor receita">
-            R$ <?= number_format($resumo['receitas'], 2, ',', '.') ?>
-        </div>
-    </div>
-
-    <div class="card">
-        <h3>Despesas</h3>
-        <div class="valor despesa">
-            R$ <?= number_format($resumo['despesas'], 2, ',', '.') ?>
-        </div>
-    </div>
-
-    <div class="card">
-        <h3>Saldo</h3>
-        <div class="valor saldo">
-            R$ <?= number_format($resumo['saldo'], 2, ',', '.') ?>
-        </div>
-    </div>
-
-    <div class="card">
-        <h3>Orçamento</h3>
-        <div class="valor">
-            <?= number_format($orcamentoGeral['percentual'], 1) ?>%
-        </div>
-    </div>
-</div>
-
-<!-- BARRA ORÇAMENTO -->
-<div class="titulo">Consumo do Orçamento</div>
-
-<?php
-$p = $orcamentoGeral['percentual'];
-$classe = $p <= 70 ? 'verde' : ($p <= 100 ? 'amarelo' : 'vermelho');
-?>
-
-<div class="barra">
-    <span class="<?= $classe ?>" style="width: <?= min($p,100) ?>%"></span>
-</div>
-
-<p>
-    R$ <?= number_format($orcamentoGeral['real'], 2, ',', '.') ?>
-    de
-    R$ <?= number_format($orcamentoGeral['orcado'], 2, ',', '.') ?>
-</p>
-
-<!-- ESTOURADOS -->
-<?php if (!empty($estourados)): ?>
-<div class="titulo">⚠️ Categorias que estouraram o orçamento</div>
-
-<table>
-    <thead>
+<div class="box">
+    <table class="kpis">
         <tr>
-            <th>Categoria</th>
-            <th>Orçado</th>
-            <th>Real</th>
-            <th>%</th>
+            <td>
+                <div class="kpi-title">Receitas</div>
+                <div class="kpi-value pos">R$ <?= number_format($receitas,2,',','.') ?></div>
+            </td>
+            <td>
+                <div class="kpi-title">Despesas</div>
+                <div class="kpi-value neg">R$ <?= number_format($despesas,2,',','.') ?></div>
+            </td>
+            <td>
+                <div class="kpi-title">Saldo</div>
+                <div class="kpi-value <?= $saldo>=0?'pri':'neg' ?>">R$ <?= number_format($saldo,2,',','.') ?></div>
+            </td>
+            <td>
+                <div class="kpi-title">Qtd lançamentos</div>
+                <div class="kpi-value"><?= (int)($resumo['qtd'] ?? 0) ?></div>
+            </td>
         </tr>
-    </thead>
-    <tbody>
-        <?php foreach ($estourados as $e): ?>
-        <tr>
-            <td><?= htmlspecialchars($e['nome']) ?></td>
-            <td>R$ <?= number_format($e['orcado'], 2, ',', '.') ?></td>
-            <td>R$ <?= number_format($e['total_real'], 2, ',', '.') ?></td>
-            <td><?= number_format($e['percentual'], 1) ?>%</td>
-        </tr>
+    </table>
+</div>
+
+<div class="box">
+    <div style="font-weight:bold; margin-bottom:6px;">Top categorias</div>
+    <?php if (empty($topCat)): ?>
+        <div style="color:#666;">Sem dados.</div>
+    <?php else: ?>
+        <?php foreach($topCat as $t): ?>
+            <?php
+                $nome = $t['nome'] ?? 'Sem categoria';
+                $total = (float)$t['total'];
+                $w = min(($total/$maxCat)*100, 100);
+            ?>
+            <div style="margin-bottom:8px;">
+                <div style="display:flex; justify-content:space-between;">
+                    <div><b><?= h($nome) ?></b> <span style="color:#666;">(<?= ($t['tipo'] ?? '')==='R'?'Receita':'Despesa' ?>)</span></div>
+                    <div><b>R$ <?= number_format($total,2,',','.') ?></b></div>
+                </div>
+                <div class="bar"><div style="width:<?= (float)$w ?>%"></div></div>
+            </div>
         <?php endforeach; ?>
-    </tbody>
-</table>
-<?php endif; ?>
+    <?php endif; ?>
+</div>
+
+<div class="box">
+    <div style="font-weight:bold; margin-bottom:6px;">Lançamentos (amostra)</div>
+    <table>
+        <thead>
+            <tr>
+                <th>Data</th>
+                <th>Descrição</th>
+                <th>Categoria</th>
+                <th>Conta</th>
+                <th>Status</th>
+                <th class="r">Valor</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php foreach(array_slice($rows, 0, 20) as $l): ?>
+                <tr>
+                    <td><?= date('d/m/Y', strtotime($l['data'])) ?></td>
+                    <td><?= h($l['descricao']) ?></td>
+                    <td><?= h($l['categoria']) ?></td>
+                    <td><?= h($l['conta']) ?></td>
+                    <td><?= h($l['status'] ?? 'pago') ?></td>
+                    <td class="r">
+                        <?= ($l['tipo'] ?? 'D') === 'R' ? '+':'-' ?>
+                        R$ <?= number_format((float)$l['valor'],2,',','.') ?>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
+        </tbody>
+    </table>
+    <div style="margin-top:8px; color:#666;">Mostrando até 20 itens (use CSV para completo).</div>
+</div>
 
 </body>
 </html>

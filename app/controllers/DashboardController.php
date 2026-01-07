@@ -1,7 +1,8 @@
 <?php
 require_once __DIR__ . '/../models/Dashboard.php';
-require_once __DIR__ . '/../models/Orcamento.php';
-require_once __DIR__ . '/../models/Lancamento.php';
+require_once __DIR__ . '/../models/Conta.php';
+require_once __DIR__ . '/../models/Categoria.php';
+require_once __DIR__ . '/../helpers/helpers.php';
 
 class DashboardController
 {
@@ -9,76 +10,52 @@ class DashboardController
     {
         $idUsuario = usuarioId();
 
-        $ano = (int)date('Y');
-        $mes = (int)date('m');
+        $ano = (int)($_GET['ano'] ?? date('Y'));
+        $mes = (int)($_GET['mes'] ?? date('m'));
+        $idConta = $_GET['id_conta'] ?? '';
+        $idConta = $idConta !== '' ? (int)$idConta : null;
 
-        // Mês anterior
-        $mesAnt = $mes - 1;
-        $anoAnt = $ano;
-        if ($mesAnt <= 0) {
-            $mesAnt = 12;
-            $anoAnt = $ano - 1;
+        $contas = Conta::allByUsuario($pdo, $idUsuario);
+
+        $resumo = Dashboard::resumoMes($pdo, $idUsuario, $ano, $mes, $idConta);
+        $cardsContas = Dashboard::cardsPorConta($pdo, $idUsuario, $ano, $mes);
+
+        // se filtrou conta, reduz cards para mostrar só ela (dashboard fica menos poluído)
+        if (!empty($idConta)) {
+            $cardsContas = array_values(array_filter($cardsContas, fn($c) => (int)$c['id'] === (int)$idConta));
         }
 
-        // Resumo do mês (cards)
-        $resumo = Dashboard::resumoMensal($pdo, $idUsuario, $ano, $mes);
-        $resumoAnt = Dashboard::resumoMensal($pdo, $idUsuario, $anoAnt, $mesAnt);
+        $topCategorias = Dashboard::topCategoriasMes($pdo, $idUsuario, $ano, $mes, $idConta, 6);
 
-        // Saldo total (somatório contas)
-        $saldoGeral = Dashboard::saldoGeral($pdo, $idUsuario);
+        // metas (somente categorias de despesa, mas meta é por categoria mesmo)
+        $metas = Dashboard::metasMes($pdo, $idUsuario, $ano, $mes, $idConta);
 
-        // Linha mensal (gráfico)
-        $linhaMensal = Dashboard::resumoMensalLinha($pdo, $idUsuario, $ano);
+        // para cadastrar meta (lista de categorias)
+        $categoriasDespesa = Categoria::allByUsuario($pdo, $idUsuario);
+        $categoriasDespesa = array_values(array_filter($categoriasDespesa, fn($c) => ($c['tipo'] ?? '') === 'D'));
 
-        // Orçamento geral + alertas orçamento
-        $orcamentoGeral = Orcamento::resumoGeralMes($pdo, $idUsuario, $ano, $mes);
-        $orcamentosEstourados = Orcamento::estouradosNoMes($pdo, $idUsuario, $ano, $mes);
-        $orcamentosPreventivo = Orcamento::preventivosNoMes($pdo, $idUsuario, $ano, $mes);
+        $view = '../app/views/dashboard_content.php';
+        require '../app/views/layout.php';
+    }
 
-        // Top despesas (onde está o gasto)
-        $topDespesas = Lancamento::topDespesasMes($pdo, $idUsuario, $ano, $mes, 5);
+    public static function salvarMeta($pdo)
+    {
+        $idUsuario = usuarioId();
 
-        // Monta alertas do topo (prioridade)
-        $alertas = [];
+        $ano = (int)($_POST['ano'] ?? date('Y'));
+        $mes = (int)($_POST['mes'] ?? date('m'));
+        $idCategoria = (int)($_POST['id_categoria'] ?? 0);
+        $valor = normalizaValor($_POST['valor_limite'] ?? '0');
 
-        if (($orcamentoGeral['orcado'] ?? 0) > 0) {
-            $p = (float)($orcamentoGeral['percentual'] ?? 0);
-
-            if ($p >= 100) {
-                $alertas[] = ['tipo' => 'danger', 'msg' => '🔴 Orçamento estourado neste mês.'];
-            } elseif ($p >= 80) {
-                $alertas[] = ['tipo' => 'warning', 'msg' => '🟡 Atenção: você já consumiu 80%+ do orçamento do mês.'];
-            }
+        if (!$idCategoria || $valor <= 0) {
+            $_SESSION['erro'] = "Informe categoria e valor da meta.";
+            header("Location: /financas/public/?url=dashboard&ano={$ano}&mes={$mes}");
+            exit;
         }
 
-        if ((float)$saldoGeral < 0) {
-            $alertas[] = ['tipo' => 'danger', 'msg' => '❌ Seu saldo geral está negativo.'];
-        }
+        Dashboard::salvarMeta($pdo, $idUsuario, $ano, $mes, $idCategoria, $valor);
 
-        // Categorias em risco (unifica estourado + preventivo)
-        $categoriasRisco = [];
-        foreach ($orcamentosEstourados as $e) {
-            $categoriasRisco[] = [
-                'status' => 'danger',
-                'nome' => $e['nome'],
-                'orcado' => (float)$e['orcado'],
-                'total_real' => (float)$e['total_real'],
-                'percentual' => (float)$e['percentual'],
-            ];
-        }
-        foreach ($orcamentosPreventivo as $p) {
-            $categoriasRisco[] = [
-                'status' => 'warning',
-                'nome' => $p['nome'],
-                'orcado' => (float)$p['orcado'],
-                'total_real' => (float)$p['total_real'],
-                'percentual' => (float)$p['percentual'],
-            ];
-        }
-
-        // Ordena por percentual desc
-        usort($categoriasRisco, fn($a,$b) => $b['percentual'] <=> $a['percentual']);
-
-        require '../app/views/dashboard.php';
+        header("Location: /financas/public/?url=dashboard&ano={$ano}&mes={$mes}");
+        exit;
     }
 }

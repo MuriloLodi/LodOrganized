@@ -1,8 +1,7 @@
 <?php
 
-function usuarioId()
-{
-    return $_SESSION['usuario']['id'];
+function usuarioId(): int {
+    return (int)($_SESSION['usuario']['id'] ?? 0);
 }
 
 function normalizaValor($valor) {
@@ -28,4 +27,25 @@ function normalizaValor($valor) {
 
     // Se só tem ponto, assume decimal EN: 12.34
     return (float)$v;
+}
+function uuidv4(): string {
+    $data = random_bytes(16);
+    $data[6] = chr((ord($data[6]) & 0x0f) | 0x40);
+    $data[8] = chr((ord($data[8]) & 0x3f) | 0x80);
+    return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
+}
+function avatarUrl(?array $usuario): ?string
+{
+    if (empty($usuario['avatar']) || empty($usuario['id'])) return null;
+    return "/financas/public/uploads/avatars/" . $usuario['id'] . "/" . $usuario['avatar'];
+}
+
+function iniciais(string $nome): string
+{
+    $nome = trim($nome);
+    if ($nome === '') return 'U';
+    $partes = preg_split('/\s+/', $nome);
+    $ini = strtoupper(mb_substr($partes[0], 0, 1));
+    if (count($partes) > 1) $ini .= strtoupper(mb_substr(end($partes), 0, 1));
+    return $ini;
 }
