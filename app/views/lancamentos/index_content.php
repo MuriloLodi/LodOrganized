@@ -28,7 +28,8 @@ foreach ($lancamentos as $l) {
 
                 <?php if (!empty($_SESSION['erro'])): ?>
                     <div class="alert alert-danger">
-                        <?= $_SESSION['erro']; unset($_SESSION['erro']); ?>
+                        <?= $_SESSION['erro'];
+                        unset($_SESSION['erro']); ?>
                     </div>
                 <?php endif; ?>
 
@@ -75,7 +76,10 @@ foreach ($lancamentos as $l) {
 
                         <div class="col-12">
                             <label class="form-label">Valor</label>
-                            <input type="number" step="0.01" name="valor" class="form-control" required>
+                            <input type="text" name="valor" class="form-control money-br" inputmode="numeric"
+                                placeholder="0,00" autocomplete="off" required>
+                            <small class="text-muted">Use vírgula para centavos. Ex: 12,50</small>
+
                         </div>
 
                         <div class="col-12">
@@ -98,9 +102,8 @@ foreach ($lancamentos as $l) {
             <div class="card-body">
 
                 <!-- FILTROS -->
-                <button class="btn btn-outline-secondary btn-sm mb-3"
-                        data-bs-toggle="collapse"
-                        data-bs-target="#filtrosLanc">
+                <button class="btn btn-outline-secondary btn-sm mb-3" data-bs-toggle="collapse"
+                    data-bs-target="#filtrosLanc">
                     Filtros
                 </button>
 
@@ -111,13 +114,13 @@ foreach ($lancamentos as $l) {
                         <div class="col-md-3">
                             <label class="form-label">Data inicial</label>
                             <input type="date" name="data_inicio" class="form-control"
-                                   value="<?= $_GET['data_inicio'] ?? '' ?>">
+                                value="<?= $_GET['data_inicio'] ?? '' ?>">
                         </div>
 
                         <div class="col-md-3">
                             <label class="form-label">Data final</label>
                             <input type="date" name="data_fim" class="form-control"
-                                   value="<?= $_GET['data_fim'] ?? '' ?>">
+                                value="<?= $_GET['data_fim'] ?? '' ?>">
                         </div>
 
                         <div class="col-md-3">
@@ -125,8 +128,7 @@ foreach ($lancamentos as $l) {
                             <select name="id_conta" class="form-select">
                                 <option value="">Todas</option>
                                 <?php foreach ($contas as $c): ?>
-                                    <option value="<?= $c['id'] ?>"
-                                        <?= ($_GET['id_conta'] ?? '') == $c['id'] ? 'selected' : '' ?>>
+                                    <option value="<?= $c['id'] ?>" <?= ($_GET['id_conta'] ?? '') == $c['id'] ? 'selected' : '' ?>>
                                         <?= htmlspecialchars($c['nome']) ?>
                                     </option>
                                 <?php endforeach; ?>
@@ -138,8 +140,7 @@ foreach ($lancamentos as $l) {
                             <select name="id_categoria" class="form-select">
                                 <option value="">Todas</option>
                                 <?php foreach ($categorias as $cat): ?>
-                                    <option value="<?= $cat['id'] ?>"
-                                        <?= ($_GET['id_categoria'] ?? '') == $cat['id'] ? 'selected' : '' ?>>
+                                    <option value="<?= $cat['id'] ?>" <?= ($_GET['id_categoria'] ?? '') == $cat['id'] ? 'selected' : '' ?>>
                                         <?= htmlspecialchars($cat['nome']) ?>
                                     </option>
                                 <?php endforeach; ?>
@@ -148,8 +149,7 @@ foreach ($lancamentos as $l) {
 
                         <div class="col-12 d-flex gap-2 mt-2">
                             <button class="btn btn-primary btn-sm">Filtrar</button>
-                            <a href="/financas/public/?url=lancamentos"
-                               class="btn btn-outline-secondary btn-sm">
+                            <a href="/financas/public/?url=lancamentos" class="btn btn-outline-secondary btn-sm">
                                 Limpar
                             </a>
                         </div>
@@ -161,21 +161,21 @@ foreach ($lancamentos as $l) {
                     <div class="col-md-4">
                         <div class="alert alert-success mb-0">
                             Receitas<br>
-                            <strong>R$ <?= number_format($totalReceitas,2,',','.') ?></strong>
+                            <strong>R$ <?= number_format($totalReceitas, 2, ',', '.') ?></strong>
                         </div>
                     </div>
 
                     <div class="col-md-4">
                         <div class="alert alert-danger mb-0">
                             Despesas<br>
-                            <strong>R$ <?= number_format($totalDespesas,2,',','.') ?></strong>
+                            <strong>R$ <?= number_format($totalDespesas, 2, ',', '.') ?></strong>
                         </div>
                     </div>
 
                     <div class="col-md-4">
                         <div class="alert alert-primary mb-0">
                             Saldo<br>
-                            <strong>R$ <?= number_format($totalReceitas - $totalDespesas,2,',','.') ?></strong>
+                            <strong>R$ <?= number_format($totalReceitas - $totalDespesas, 2, ',', '.') ?></strong>
                         </div>
                     </div>
                 </div>
@@ -194,29 +194,29 @@ foreach ($lancamentos as $l) {
                             </tr>
                         </thead>
                         <tbody>
-                        <?php foreach ($lancamentos as $l): ?>
-                            <tr>
-                                <td><?= date('d/m/Y', strtotime($l['data'])) ?></td>
-                                <td><?= htmlspecialchars($l['descricao']) ?></td>
-                                <td><?= htmlspecialchars($l['categoria']) ?></td>
-                                <td><?= htmlspecialchars($l['conta']) ?></td>
-                                <td class="text-end <?= $l['tipo']=='R'?'text-success':'text-danger' ?>">
-                                    <?= $l['tipo']=='R'?'+':'-' ?>
-                                    R$ <?= number_format($l['valor'],2,',','.') ?>
-                                </td>
-                                <td class="text-end">
-                                    <a href="/financas/public/?url=lancamentos-edit&id=<?= $l['id'] ?>"
-                                       class="btn btn-outline-secondary btn-sm">
-                                       Editar
-                                    </a>
-                                    <a href="/financas/public/?url=lancamentos-delete&id=<?= $l['id'] ?>"
-                                       class="btn btn-outline-danger btn-sm"
-                                       onclick="return confirm('Excluir este lançamento?')">
-                                       Excluir
-                                    </a>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
+                            <?php foreach ($lancamentos as $l): ?>
+                                <tr>
+                                    <td><?= date('d/m/Y', strtotime($l['data'])) ?></td>
+                                    <td><?= htmlspecialchars($l['descricao']) ?></td>
+                                    <td><?= htmlspecialchars($l['categoria']) ?></td>
+                                    <td><?= htmlspecialchars($l['conta']) ?></td>
+                                    <td class="text-end <?= $l['tipo'] == 'R' ? 'text-success' : 'text-danger' ?>">
+                                        <?= $l['tipo'] == 'R' ? '+' : '-' ?>
+                                        R$ <?= number_format($l['valor'], 2, ',', '.') ?>
+                                    </td>
+                                    <td class="text-end">
+                                        <a href="/financas/public/?url=lancamentos-edit&id=<?= $l['id'] ?>"
+                                            class="btn btn-outline-secondary btn-sm">
+                                            Editar
+                                        </a>
+                                        <a href="/financas/public/?url=lancamentos-delete&id=<?= $l['id'] ?>"
+                                            class="btn btn-outline-danger btn-sm"
+                                            onclick="return confirm('Excluir este lançamento?')">
+                                            Excluir
+                                        </a>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
                         </tbody>
                     </table>
                 </div>
@@ -228,12 +228,12 @@ foreach ($lancamentos as $l) {
 </div>
 
 <style>
-.table-responsive-mobile {
-    width: 100%;
-    overflow-x: auto;
-}
+    .table-responsive-mobile {
+        width: 100%;
+        overflow-x: auto;
+    }
 
-.table-responsive-mobile table {
-    min-width: 900px;
-}
+    .table-responsive-mobile table {
+        min-width: 900px;
+    }
 </style>

@@ -1,84 +1,135 @@
 <?php
 // ===== Helpers / dados =====
 $meses = [
-  1 => 'Janeiro', 2 => 'Fevereiro', 3 => 'Março', 4 => 'Abril',
-  5 => 'Maio', 6 => 'Junho', 7 => 'Julho', 8 => 'Agosto',
-  9 => 'Setembro', 10 => 'Outubro', 11 => 'Novembro', 12 => 'Dezembro'
+    1 => 'Janeiro',
+    2 => 'Fevereiro',
+    3 => 'Março',
+    4 => 'Abril',
+    5 => 'Maio',
+    6 => 'Junho',
+    7 => 'Julho',
+    8 => 'Agosto',
+    9 => 'Setembro',
+    10 => 'Outubro',
+    11 => 'Novembro',
+    12 => 'Dezembro'
 ];
 
-$mesInt = (int)$mes;
-$anoInt = (int)$ano;
+$mesInt = (int) $mes;
+$anoInt = (int) $ano;
 
 // total do mês (geral)
 $orcadoGeral = 0.0;
-$realGeral   = 0.0;
+$realGeral = 0.0;
 
 if (!empty($categoriasDespesa)) {
     foreach ($categoriasDespesa as $c) {
-        $id = (int)$c['id'];
-        $orcadoGeral += (float)($orcamentosMap[$id] ?? 0);
-        $realGeral   += (float)($gastosReais[$id] ?? 0);
+        $id = (int) $c['id'];
+        $orcadoGeral += (float) ($orcamentosMap[$id] ?? 0);
+        $realGeral += (float) ($gastosReais[$id] ?? 0);
     }
 }
 
 $percentGeral = ($orcadoGeral > 0) ? ($realGeral / $orcadoGeral) * 100 : 0;
 
 $classeGeral = 'bg-secondary';
-$textoGeral  = 'Sem orçamentos definidos';
+$textoGeral = 'Sem orçamentos definidos';
 
 if ($orcadoGeral > 0) {
-    if ($percentGeral <= 70) { $classeGeral = 'bg-success'; $textoGeral = 'Saudável'; }
-    elseif ($percentGeral <= 100) { $classeGeral = 'bg-warning'; $textoGeral = 'Atenção'; }
-    else { $classeGeral = 'bg-danger'; $textoGeral = 'Estourado'; }
+    if ($percentGeral <= 70) {
+        $classeGeral = 'bg-success';
+        $textoGeral = 'Saudável';
+    } elseif ($percentGeral <= 100) {
+        $classeGeral = 'bg-warning';
+        $textoGeral = 'Atenção';
+    } else {
+        $classeGeral = 'bg-danger';
+        $textoGeral = 'Estourado';
+    }
 }
 
 // ícones simples por nome (opcional, só pra ficar mais bonito)
-function iconeCategoria($nome) {
+function iconeCategoria($nome)
+{
     $n = mb_strtolower($nome ?? '');
-    if (str_contains($n, 'aliment') || str_contains($n, 'mercad') || str_contains($n, 'rest')) return 'bi-cup-hot';
-    if (str_contains($n, 'casa') || str_contains($n, 'alug') || str_contains($n, 'luz') || str_contains($n, 'água') || str_contains($n, 'agua')) return 'bi-house';
-    if (str_contains($n, 'trans') || str_contains($n, 'uber') || str_contains($n, 'comb') || str_contains($n, 'gas')) return 'bi-car-front';
-    if (str_contains($n, 'saúde') || str_contains($n, 'saude') || str_contains($n, 'farm')) return 'bi-heart-pulse';
-    if (str_contains($n, 'educ') || str_contains($n, 'curso')) return 'bi-mortarboard';
-    if (str_contains($n, 'lazer') || str_contains($n, 'netflix') || str_contains($n, 'assin')) return 'bi-controller';
+    if (str_contains($n, 'aliment') || str_contains($n, 'mercad') || str_contains($n, 'rest'))
+        return 'bi-cup-hot';
+    if (str_contains($n, 'casa') || str_contains($n, 'alug') || str_contains($n, 'luz') || str_contains($n, 'água') || str_contains($n, 'agua'))
+        return 'bi-house';
+    if (str_contains($n, 'trans') || str_contains($n, 'uber') || str_contains($n, 'comb') || str_contains($n, 'gas'))
+        return 'bi-car-front';
+    if (str_contains($n, 'saúde') || str_contains($n, 'saude') || str_contains($n, 'farm'))
+        return 'bi-heart-pulse';
+    if (str_contains($n, 'educ') || str_contains($n, 'curso'))
+        return 'bi-mortarboard';
+    if (str_contains($n, 'lazer') || str_contains($n, 'netflix') || str_contains($n, 'assin'))
+        return 'bi-controller';
     return 'bi-tag';
 }
 ?>
 
 <style>
-/* ====== TABLE MOBILE FIX ====== */
-.table-responsive-mobile {
-    width: 100%;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-}
-.table-responsive-mobile table {
-    min-width: 900px; /* força largura mínima */
-}
+    /* ====== TABLE MOBILE FIX ====== */
+    .table-responsive-mobile {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
 
-/* ====== Orcamento UI ====== */
-.page-header-sub { color: #6c757d; }
-.card-soft {
-    border: 1px solid rgba(0,0,0,.06);
-    border-radius: 16px;
-}
-.kpi {
-    border: 1px solid rgba(0,0,0,.06);
-    border-radius: 16px;
-    background: #fff;
-}
-.kpi .label { color: #6c757d; font-size: .85rem; }
-.kpi .value { font-size: 1.35rem; font-weight: 800; }
-.kpi .hint { color: #6c757d; font-size: .85rem; }
-.badge-soft {
-    border-radius: 999px;
-    font-weight: 700;
-}
-.input-money { min-width: 130px; }
-.progress { background: rgba(0,0,0,.06); }
-@media (max-width: 991px) {
-    .input-money { min-width: 120px; }
-}
+    .table-responsive-mobile table {
+        min-width: 900px;
+        /* força largura mínima */
+    }
+
+    /* ====== Orcamento UI ====== */
+    .page-header-sub {
+        color: #6c757d;
+    }
+
+    .card-soft {
+        border: 1px solid rgba(0, 0, 0, .06);
+        border-radius: 16px;
+    }
+
+    .kpi {
+        border: 1px solid rgba(0, 0, 0, .06);
+        border-radius: 16px;
+        background: #fff;
+    }
+
+    .kpi .label {
+        color: #6c757d;
+        font-size: .85rem;
+    }
+
+    .kpi .value {
+        font-size: 1.35rem;
+        font-weight: 800;
+    }
+
+    .kpi .hint {
+        color: #6c757d;
+        font-size: .85rem;
+    }
+
+    .badge-soft {
+        border-radius: 999px;
+        font-weight: 700;
+    }
+
+    .input-money {
+        min-width: 130px;
+    }
+
+    .progress {
+        background: rgba(0, 0, 0, .06);
+    }
+
+    @media (max-width: 991px) {
+        .input-money {
+            min-width: 120px;
+        }
+    }
 </style>
 
 <div class="d-flex justify-content-between align-items-start align-items-md-center gap-3 mb-4 flex-wrap">
@@ -104,7 +155,8 @@ function iconeCategoria($nome) {
 
 <?php if (!empty($_SESSION['erro'])): ?>
     <div class="alert alert-danger">
-        <?= htmlspecialchars($_SESSION['erro']); unset($_SESSION['erro']); ?>
+        <?= htmlspecialchars($_SESSION['erro']);
+        unset($_SESSION['erro']); ?>
     </div>
 <?php endif; ?>
 
@@ -135,7 +187,7 @@ function iconeCategoria($nome) {
                     <i class="bi bi-funnel me-1"></i> Filtrar
                 </button>
                 <a class="btn btn-outline-secondary w-100"
-                   href="/financas/public/?url=orcamentos&ano=<?= date('Y') ?>&mes=<?= date('m') ?>">
+                    href="/financas/public/?url=orcamentos&ano=<?= date('Y') ?>&mes=<?= date('m') ?>">
                     Hoje
                 </a>
             </div>
@@ -168,7 +220,8 @@ function iconeCategoria($nome) {
                     <div class="label mb-1">Consumo do orçamento</div>
                     <div class="value"><?= number_format($percentGeral, 1) ?>%</div>
                 </div>
-                <span class="badge badge-soft <?= $classeGeral ?> <?= $classeGeral === 'bg-warning' ? 'text-dark' : '' ?>">
+                <span
+                    class="badge badge-soft <?= $classeGeral ?> <?= $classeGeral === 'bg-warning' ? 'text-dark' : '' ?>">
                     <?= $textoGeral ?>
                 </span>
             </div>
@@ -231,11 +284,11 @@ function iconeCategoria($nome) {
                     </thead>
 
                     <tbody>
-                    <?php foreach ($categoriasDespesa as $cat): ?>
-                        <?php
-                            $idCat = (int)$cat['id'];
-                            $orcado = (float)($orcamentosMap[$idCat] ?? 0);
-                            $real   = (float)($gastosReais[$idCat] ?? 0);
+                        <?php foreach ($categoriasDespesa as $cat): ?>
+                            <?php
+                            $idCat = (int) $cat['id'];
+                            $orcado = (float) ($orcamentosMap[$idCat] ?? 0);
+                            $real = (float) ($gastosReais[$idCat] ?? 0);
 
                             $percentual = ($orcado > 0) ? ($real / $orcado) * 100 : 0;
 
@@ -255,80 +308,77 @@ function iconeCategoria($nome) {
 
                             $barra = min($percentual, 100);
                             $icone = iconeCategoria($cat['nome'] ?? '');
-                        ?>
-                        <tr>
-                            <td>
-                                <div class="d-flex align-items-center gap-2">
-                                    <div class="rounded-3 d-inline-flex align-items-center justify-content-center"
-                                         style="width:36px;height:36px;background:rgba(13,110,253,.10);color:#0d6efd;">
-                                        <i class="bi <?= $icone ?>"></i>
-                                    </div>
-                                    <div>
-                                        <div class="fw-semibold"><?= htmlspecialchars($cat['nome']) ?></div>
-                                        <div class="text-muted small">
-                                            <span class="badge <?= $classe ?> <?= $classe==='bg-warning' ? 'text-dark' : '' ?>">
-                                                <?= $label ?>
-                                            </span>
+                            ?>
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="rounded-3 d-inline-flex align-items-center justify-content-center"
+                                            style="width:36px;height:36px;background:rgba(13,110,253,.10);color:#0d6efd;">
+                                            <i class="bi <?= $icone ?>"></i>
+                                        </div>
+                                        <div>
+                                            <div class="fw-semibold"><?= htmlspecialchars($cat['nome']) ?></div>
+                                            <div class="text-muted small">
+                                                <span
+                                                    class="badge <?= $classe ?> <?= $classe === 'bg-warning' ? 'text-dark' : '' ?>">
+                                                    <?= $label ?>
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            </td>
+                                </td>
 
-                            <td class="fw-semibold">
-                                R$ <?= number_format($orcado, 2, ',', '.') ?>
-                            </td>
+                                <td class="fw-semibold">
+                                    R$ <?= number_format($orcado, 2, ',', '.') ?>
+                                </td>
 
-                            <td class="<?= $real > 0 ? 'fw-semibold' : 'text-muted' ?>">
-                                R$ <?= number_format($real, 2, ',', '.') ?>
-                            </td>
+                                <td class="<?= $real > 0 ? 'fw-semibold' : 'text-muted' ?>">
+                                    R$ <?= number_format($real, 2, ',', '.') ?>
+                                </td>
 
-                            <td>
-                                <div class="progress" style="height: 18px;">
-                                    <div class="progress-bar <?= $classe ?>"
-                                         style="width: <?= $barra ?>%">
-                                        <?= ($orcado > 0) ? number_format($percentual, 1) . '%' : '—' ?>
+                                <td>
+                                    <div class="progress" style="height: 18px;">
+                                        <div class="progress-bar <?= $classe ?>" style="width: <?= $barra ?>%">
+                                            <?= ($orcado > 0) ? number_format($percentual, 1) . '%' : '—' ?>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="text-muted small mt-1 d-flex justify-content-between">
-                                    <span>Gasto: <b>R$ <?= number_format($real, 2, ',', '.') ?></b></span>
-                                    <span>Meta: <b>R$ <?= number_format($orcado, 2, ',', '.') ?></b></span>
-                                </div>
-                                <?php if ($orcado > 0 && $percentual > 100): ?>
-                                    <div class="text-danger small fw-semibold mt-1">
-                                        <i class="bi bi-exclamation-triangle me-1"></i> Ultrapassou o orçamento
+                                    <div class="text-muted small mt-1 d-flex justify-content-between">
+                                        <span>Gasto: <b>R$ <?= number_format($real, 2, ',', '.') ?></b></span>
+                                        <span>Meta: <b>R$ <?= number_format($orcado, 2, ',', '.') ?></b></span>
                                     </div>
-                                <?php endif; ?>
-                            </td>
-
-                            <td>
-                                <form method="POST"
-                                      action="/financas/public/?url=orcamentos-store"
-                                      class="d-flex gap-2 align-items-center flex-wrap">
-                                    <input type="text"
-                                           name="valor"
-                                           value="<?= number_format($orcado, 2, ',', '.') ?>"
-                                           class="form-control form-control-sm input-money"
-                                           placeholder="0,00">
-
-                                    <input type="hidden" name="id_categoria" value="<?= $idCat ?>">
-                                    <input type="hidden" name="ano" value="<?= $anoInt ?>">
-                                    <input type="hidden" name="mes" value="<?= $mesInt ?>">
-
-                                    <button class="btn btn-sm btn-primary">
-                                        <i class="bi bi-check2 me-1"></i> Salvar
-                                    </button>
-
-                                    <?php if ($orcado > 0): ?>
-                                        <button class="btn btn-sm btn-outline-secondary"
-                                                type="button"
-                                                onclick="this.closest('form').querySelector('input[name=valor]').value='0,00';">
-                                            Zerar
-                                        </button>
+                                    <?php if ($orcado > 0 && $percentual > 100): ?>
+                                        <div class="text-danger small fw-semibold mt-1">
+                                            <i class="bi bi-exclamation-triangle me-1"></i> Ultrapassou o orçamento
+                                        </div>
                                     <?php endif; ?>
-                                </form>
-                            </td>
-                        </tr>
-                    <?php endforeach; ?>
+                                </td>
+
+                                <td>
+                                    <form method="POST" action="/financas/public/?url=orcamentos-store"
+                                        class="d-flex gap-2 align-items-center flex-wrap">
+                                        <input type="text" name="valor" class="form-control form-control-sm money-br"
+                                            inputmode="numeric" placeholder="0,00"
+                                            value="<?= number_format((float) $orcado, 2, ',', '.') ?>">
+
+
+                                        <input type="hidden" name="id_categoria" value="<?= $idCat ?>">
+                                        <input type="hidden" name="ano" value="<?= $anoInt ?>">
+                                        <input type="hidden" name="mes" value="<?= $mesInt ?>">
+
+                                        <button class="btn btn-sm btn-primary">
+                                            <i class="bi bi-check2 me-1"></i> Salvar
+                                        </button>
+
+                                        <?php if ($orcado > 0): ?>
+                                            <button class="btn btn-sm btn-outline-secondary" type="button"
+                                                onclick="this.closest('form').querySelector('input[name=valor]').value='0,00';">
+                                                Zerar
+                                            </button>
+                                        <?php endif; ?>
+                                    </form>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
                     </tbody>
                 </table>
             </div>

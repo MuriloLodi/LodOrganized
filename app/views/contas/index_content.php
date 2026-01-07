@@ -22,7 +22,8 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
 
                 <?php if (!empty($_SESSION['erro'])): ?>
                     <div class="alert alert-danger">
-                        <?= $_SESSION['erro']; unset($_SESSION['erro']); ?>
+                        <?= $_SESSION['erro'];
+                        unset($_SESSION['erro']); ?>
                     </div>
                 <?php endif; ?>
 
@@ -34,11 +35,10 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
 
                     <div class="mb-3">
                         <label class="form-label">Saldo inicial</label>
-                        <input type="number"
-                               step="0.01"
-                               name="saldo"
-                               class="form-control"
-                               value="0">
+                        <input type="text" name="saldo" class="form-control money-br" inputmode="numeric"
+                            placeholder="0,00"
+                            value="<?= isset($conta['saldo_atual']) ? number_format((float) $conta['saldo_atual'], 2, ',', '.') : '0,00' ?>">
+
                     </div>
 
                     <button class="btn btn-primary w-100">
@@ -56,10 +56,8 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
 
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h5 class="fw-semibold mb-0">Minhas contas</h5>
-                    <input type="text"
-                           id="buscaConta"
-                           class="form-control form-control-sm w-50"
-                           placeholder="Buscar conta...">
+                    <input type="text" id="buscaConta" class="form-control form-control-sm w-50"
+                        placeholder="Buscar conta...">
                 </div>
 
                 <?php if (empty($contas)): ?>
@@ -69,21 +67,18 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
                     <div class="list-group list-group-flush">
 
                         <?php foreach ($contas as $c): ?>
-                            <div class="list-group-item conta-item"
-                                 data-nome="<?= strtolower($c['nome']) ?>">
+                            <div class="list-group-item conta-item" data-nome="<?= strtolower($c['nome']) ?>">
 
                                 <div class="d-flex flex-column flex-lg-row gap-3 justify-content-between">
 
                                     <!-- ESQUERDA: EDITAR -->
-                                    <form method="POST"
-                                          action="/financas/public/?url=contas-update"
-                                          class="d-flex flex-column flex-md-row gap-2 w-100">
+                                    <form method="POST" action="/financas/public/?url=contas-update"
+                                        class="d-flex flex-column flex-md-row gap-2 w-100">
 
                                         <input type="hidden" name="id" value="<?= $c['id'] ?>">
 
-                                        <input name="nome"
-                                               class="form-control form-control-sm"
-                                               value="<?= htmlspecialchars($c['nome']) ?>">
+                                        <input name="nome" class="form-control form-control-sm"
+                                            value="<?= htmlspecialchars($c['nome']) ?>">
 
                                         <button class="btn btn-outline-primary btn-sm w-100 w-md-auto">
                                             Salvar
@@ -98,9 +93,8 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
                                         </div>
 
                                         <?php if (Conta::canDelete($pdo, $_SESSION['usuario']['id'], $c['id'])): ?>
-                                            <form method="POST"
-                                                  action="/financas/public/?url=contas-delete"
-                                                  onsubmit="return confirm('Excluir conta?')">
+                                            <form method="POST" action="/financas/public/?url=contas-delete"
+                                                onsubmit="return confirm('Excluir conta?')">
                                                 <input type="hidden" name="id" value="<?= $c['id'] ?>">
                                                 <button class="btn btn-outline-danger btn-sm w-100 w-lg-auto mt-1">
                                                     Excluir
@@ -126,23 +120,23 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
 
 <!-- ================= BUSCA ================= -->
 <script>
-document.getElementById('buscaConta')?.addEventListener('keyup', e => {
-    const termo = e.target.value.toLowerCase();
-    document.querySelectorAll('.conta-item').forEach(item => {
-        item.style.display = item.dataset.nome.includes(termo) ? '' : 'none';
+    document.getElementById('buscaConta')?.addEventListener('keyup', e => {
+        const termo = e.target.value.toLowerCase();
+        document.querySelectorAll('.conta-item').forEach(item => {
+            item.style.display = item.dataset.nome.includes(termo) ? '' : 'none';
+        });
     });
-});
 </script>
 
 <!-- ================= MOBILE REFINEMENT ================= -->
 <style>
-.conta-item {
-    padding: 12px 0;
-}
-
-@media (max-width: 576px) {
-    .conta-item button {
-        font-size: .9rem;
+    .conta-item {
+        padding: 12px 0;
     }
-}
+
+    @media (max-width: 576px) {
+        .conta-item button {
+            font-size: .9rem;
+        }
+    }
 </style>

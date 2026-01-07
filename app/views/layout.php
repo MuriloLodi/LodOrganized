@@ -345,6 +345,7 @@ function menuOpenRelatorios($rotaAtual) {
 
 <!-- Chart.js (se suas telas usarem) -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="/financas/public/js/mask.js"></script>
 
 </body>
 </html>

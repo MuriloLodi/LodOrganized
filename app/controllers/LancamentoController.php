@@ -32,6 +32,7 @@ class LancamentoController
     public static function store($pdo)
     {
         $idUsuario = usuarioId();
+        $valor = normalizaValor($_POST['valor'] ?? '0');
 
         try {
             $pdo->beginTransaction();
