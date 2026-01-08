@@ -69,7 +69,7 @@ $foto = avatarUrl($u);
                 <form method="POST" action="/financas/public/?url=perfil-update">
                     <div class="row g-2">
                         <div class="col-md-6">
-                            <label class="form-label">Nome</label>
+                            <label class="form-label">Nome/Empresa</label>
                             <input class="form-control" name="nome" required value="<?= htmlspecialchars($u['nome'] ?? '') ?>">
                         </div>
 

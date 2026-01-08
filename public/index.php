@@ -12,6 +12,9 @@ require_once __DIR__ . '/../app/controllers/RelatorioController.php';
 require_once __DIR__ . '/../app/helpers/helpers.php';
 require_once __DIR__ . '/../app/controllers/PropostaController.php';
 require_once __DIR__ . '/../app/controllers/PerfilController.php';
+require_once __DIR__ . '/../app/controllers/ClienteController.php';
+require_once __DIR__ . '/../app/controllers/ServicoController.php';
+
 
 $rota = $_GET['url'] ?? 'login';
 
@@ -123,7 +126,7 @@ switch ($rota) {
     case 'relatorio-pdf':
         RelatorioController::exportPdf($pdo);
         break;
-    
+
     case 'propostas':
         require '../app/views/auth_guard.php';
         PropostaController::index($pdo);
@@ -244,6 +247,51 @@ switch ($rota) {
         OrcamentoController::store($pdo);
         break;
 
+    case 'clientes':
+        require '../app/views/auth_guard.php';
+        ClienteController::index($pdo);
+        break;
+
+    case 'clientes-store':
+        require '../app/views/auth_guard.php';
+        ClienteController::store($pdo);
+        break;
+
+    case 'clientes-update':
+        require '../app/views/auth_guard.php';
+        ClienteController::update($pdo);
+        break;
+
+    case 'clientes-delete':
+        require '../app/views/auth_guard.php';
+        ClienteController::delete($pdo);
+        break;
+    
+
+        case 'servicos':
+    require '../app/views/auth_guard.php';
+    ServicoController::index($pdo);
+    break;
+
+case 'servicos-store':
+    require '../app/views/auth_guard.php';
+    ServicoController::store($pdo);
+    break;
+
+case 'servicos-update':
+    require '../app/views/auth_guard.php';
+    ServicoController::update($pdo);
+    break;
+
+case 'servicos-delete':
+    require '../app/views/auth_guard.php';
+    ServicoController::delete($pdo);
+    break;
+
+case 'servicos-toggle':
+    require '../app/views/auth_guard.php';
+    ServicoController::toggle($pdo);
+    break;
 
     default:
         echo "Página não encontrada";

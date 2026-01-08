@@ -49,3 +49,9 @@ function iniciais(string $nome): string
     if (count($partes) > 1) $ini .= strtoupper(mb_substr(end($partes), 0, 1));
     return $ini;
 }
+function imgToDataUri($absPath) {
+  if (!$absPath || !is_file($absPath)) return null;
+  $mime = mime_content_type($absPath);
+  $data = base64_encode(file_get_contents($absPath));
+  return "data:$mime;base64,$data";
+}

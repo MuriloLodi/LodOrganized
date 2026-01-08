@@ -1,6 +1,9 @@
 <?php
 $isEdit = !empty($proposta['id']);
 $action = $isEdit ? '/financas/public/?url=propostas-update' : '/financas/public/?url=propostas-store';
+
+$clientes = $clientes ?? []; // vem do controller
+$idClienteAtual = (int)($proposta['id_cliente'] ?? 0);
 ?>
 
 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -33,6 +36,9 @@ $action = $isEdit ? '/financas/public/?url=propostas-update' : '/financas/public
     <input type="hidden" name="id" value="<?= (int)$proposta['id'] ?>">
   <?php endif; ?>
 
+  <!-- ✅ guarda o vínculo do cliente (se selecionar) -->
+  <input type="hidden" name="id_cliente" id="id_cliente" value="<?= $idClienteAtual ? (int)$idClienteAtual : '' ?>">
+
   <div class="row g-3">
     <div class="col-lg-4">
       <div class="card h-100">
@@ -41,8 +47,11 @@ $action = $isEdit ? '/financas/public/?url=propostas-update' : '/financas/public
           <div class="row g-2">
             <div class="col-6">
               <label class="form-label">Número</label>
-              <input name="numero" class="form-control" value="<?= htmlspecialchars($proposta['numero'] ?? '') ?>" <?= $isEdit ? 'readonly' : '' ?>>
+              <input name="numero" class="form-control"
+                     value="<?= htmlspecialchars($proposta['numero'] ?? '') ?>"
+                     <?= $isEdit ? 'readonly' : '' ?>>
             </div>
+
             <div class="col-6">
               <label class="form-label">Status</label>
               <select name="status" class="form-select">
@@ -58,41 +67,71 @@ $action = $isEdit ? '/financas/public/?url=propostas-update' : '/financas/public
 
             <div class="col-6">
               <label class="form-label">Emissão</label>
-              <input type="date" name="data_emissao" class="form-control" value="<?= htmlspecialchars($proposta['data_emissao'] ?? date('Y-m-d')) ?>">
+              <input type="date" name="data_emissao" class="form-control"
+                     value="<?= htmlspecialchars($proposta['data_emissao'] ?? date('Y-m-d')) ?>">
             </div>
+
             <div class="col-6">
               <label class="form-label">Validade (dias)</label>
-              <input type="number" name="validade_dias" class="form-control" value="<?= (int)($proposta['validade_dias'] ?? 15) ?>">
+              <input type="number" name="validade_dias" class="form-control"
+                     value="<?= (int)($proposta['validade_dias'] ?? 15) ?>">
             </div>
           </div>
 
           <hr class="my-3">
 
-          <h6 class="fw-semibold mb-2">Cliente</h6>
+          <div class="d-flex align-items-center justify-content-between">
+            <h6 class="fw-semibold mb-2">Cliente</h6>
+            <button type="button" class="btn btn-outline-secondary btn-sm" id="btnLimparCliente">
+              Limpar seleção
+            </button>
+          </div>
+
+          <!-- ✅ Cliente existente -->
+          <div class="mb-2">
+            <label class="form-label">Cliente existente</label>
+            <select class="form-select" id="selectCliente">
+              <option value="">— Selecionar —</option>
+              <?php foreach ($clientes as $c): ?>
+                <?php $cid = (int)($c['id'] ?? 0); ?>
+                <option value="<?= $cid ?>"
+                        <?= $idClienteAtual === $cid ? 'selected' : '' ?>>
+                  <?= htmlspecialchars($c['nome'] ?? '') ?>
+                  <?php if (!empty($c['documento'])): ?> • <?= htmlspecialchars($c['documento']) ?><?php endif; ?>
+                </option>
+              <?php endforeach; ?>
+            </select>
+            <div class="text-muted small mt-1">Ao selecionar, os campos abaixo são preenchidos automaticamente.</div>
+          </div>
 
           <div class="mb-2">
             <label class="form-label">Nome</label>
-            <input name="cliente_nome" class="form-control" required value="<?= htmlspecialchars($proposta['cliente_nome'] ?? '') ?>">
+            <input name="cliente_nome" id="cliente_nome" class="form-control" required
+                   value="<?= htmlspecialchars($proposta['cliente_nome'] ?? '') ?>">
           </div>
 
           <div class="mb-2">
             <label class="form-label">E-mail</label>
-            <input name="cliente_email" class="form-control" value="<?= htmlspecialchars($proposta['cliente_email'] ?? '') ?>">
+            <input name="cliente_email" id="cliente_email" class="form-control"
+                   value="<?= htmlspecialchars($proposta['cliente_email'] ?? '') ?>">
           </div>
 
           <div class="mb-2">
             <label class="form-label">Telefone</label>
-            <input name="cliente_telefone" class="form-control" value="<?= htmlspecialchars($proposta['cliente_telefone'] ?? '') ?>">
+            <input name="cliente_telefone" id="cliente_telefone" class="form-control"
+                   value="<?= htmlspecialchars($proposta['cliente_telefone'] ?? '') ?>">
           </div>
 
           <div class="mb-2">
             <label class="form-label">Endereço</label>
-            <input name="cliente_endereco" class="form-control" value="<?= htmlspecialchars($proposta['cliente_endereco'] ?? '') ?>">
+            <input name="cliente_endereco" id="cliente_endereco" class="form-control"
+                   value="<?= htmlspecialchars($proposta['cliente_endereco'] ?? '') ?>">
           </div>
 
           <div class="mb-2">
             <label class="form-label">Forma de pagamento</label>
-            <input name="forma_pagamento" class="form-control" value="<?= htmlspecialchars($proposta['forma_pagamento'] ?? '') ?>">
+            <input name="forma_pagamento" class="form-control"
+                   value="<?= htmlspecialchars($proposta['forma_pagamento'] ?? '') ?>">
           </div>
 
         </div>
@@ -126,13 +165,19 @@ $action = $isEdit ? '/financas/public/?url=propostas-update' : '/financas/public
                   <tr>
                     <td class="text-muted"><?= $idx+1 ?></td>
                     <td>
-                      <input class="form-control" name="itens[<?= $idx ?>][descricao]" value="<?= htmlspecialchars($it['descricao'] ?? '') ?>" placeholder="Ex: Cozinha completa" required>
+                      <input class="form-control" name="itens[<?= $idx ?>][descricao]"
+                             value="<?= htmlspecialchars($it['descricao'] ?? '') ?>"
+                             placeholder="Ex: Cozinha completa" required>
                     </td>
                     <td>
-                      <input class="form-control text-end money-br" name="itens[<?= $idx ?>][quantidade]" value="<?= number_format((float)($it['quantidade'] ?? 1), 2, ',', '.') ?>" placeholder="1,00">
+                      <input class="form-control text-end money-br" name="itens[<?= $idx ?>][quantidade]"
+                             value="<?= number_format((float)($it['quantidade'] ?? 1), 2, ',', '.') ?>"
+                             placeholder="1,00">
                     </td>
                     <td>
-                      <input class="form-control text-end money-br" name="itens[<?= $idx ?>][valor_unit]" value="<?= number_format((float)($it['valor_unit'] ?? 0), 2, ',', '.') ?>" placeholder="0,00">
+                      <input class="form-control text-end money-br" name="itens[<?= $idx ?>][valor_unit]"
+                             value="<?= number_format((float)($it['valor_unit'] ?? 0), 2, ',', '.') ?>"
+                             placeholder="0,00">
                     </td>
                     <td class="text-end">
                       <button class="btn btn-outline-danger btn-sm btnDelItem" type="button">
@@ -193,6 +238,66 @@ $action = $isEdit ? '/financas/public/?url=propostas-update' : '/financas/public
 
 <script>
 (function(){
+  // ✅ clientes disponíveis (para preencher campos)
+  const CLIENTES = <?= json_encode($clientes, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
+
+  const sel = document.getElementById('selectCliente');
+  const hid = document.getElementById('id_cliente');
+
+  const inNome = document.getElementById('cliente_nome');
+  const inEmail = document.getElementById('cliente_email');
+  const inTel = document.getElementById('cliente_telefone');
+  const inEnd = document.getElementById('cliente_endereco');
+
+  const btnLimpar = document.getElementById('btnLimparCliente');
+
+  function findClienteById(id){
+    id = parseInt(id || "0", 10);
+    if(!id) return null;
+    return CLIENTES.find(c => parseInt(c.id, 10) === id) || null;
+  }
+
+  function aplicarCliente(cli){
+    if(!cli) return;
+    hid.value = cli.id || '';
+    inNome.value = cli.nome || '';
+    inEmail.value = cli.email || '';
+    inTel.value = cli.telefone || '';
+    inEnd.value = cli.endereco || '';
+  }
+
+  function limparCliente(){
+  if(sel) sel.value = '';
+  if(hid) hid.value = '';
+
+  // ✅ agora limpa os campos também
+  inNome.value = '';
+  inEmail.value = '';
+  inTel.value = '';
+  inEnd.value = '';
+}
+
+
+  sel?.addEventListener('change', function(){
+    const cli = findClienteById(this.value);
+    if(cli) aplicarCliente(cli);
+    else { hid.value = ''; }
+  });
+
+  btnLimpar?.addEventListener('click', function(){
+    limparCliente();
+  });
+
+  // se ao abrir a tela já tiver id_cliente preenchido (edição), preenche
+  if(hid?.value){
+    const cli = findClienteById(hid.value);
+    if(cli){
+      if(sel) sel.value = String(cli.id);
+      aplicarCliente(cli);
+    }
+  }
+
+  // ===== itens (igual seu atual) =====
   const tbl = document.getElementById('tblItens');
   const btnAdd = document.getElementById('btnAddItem');
 

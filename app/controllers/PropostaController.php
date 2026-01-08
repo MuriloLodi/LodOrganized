@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../models/Proposta.php';
+require_once __DIR__ . '/../models/Cliente.php';
 require_once __DIR__ . '/../helpers/helpers.php';
 
 class PropostaController
@@ -18,8 +19,12 @@ class PropostaController
     {
         $idUsuario = usuarioId();
 
+        // ✅ lista clientes do usuário (para dropdown)
+        $clientes = Cliente::allByUsuario($pdo, $idUsuario);
+
         $proposta = [
             'id' => null,
+            'id_cliente' => null,
             'numero' => Proposta::gerarNumero($pdo, $idUsuario),
             'status' => 'rascunho',
             'data_emissao' => date('Y-m-d'),
@@ -46,49 +51,71 @@ class PropostaController
     {
         $idUsuario = usuarioId();
 
+        $idCliente = (int)($_POST['id_cliente'] ?? 0);
+
         $data = [
             'id_usuario' => $idUsuario,
+            'id_cliente' => $idCliente ?: null,
+
             'numero' => trim($_POST['numero'] ?? ''),
             'status' => $_POST['status'] ?? 'rascunho',
             'data_emissao' => $_POST['data_emissao'] ?? date('Y-m-d'),
             'validade_dias' => (int)($_POST['validade_dias'] ?? 15),
+
+            // snapshot (manual ou vindo do cliente)
             'cliente_nome' => trim($_POST['cliente_nome'] ?? ''),
             'cliente_email' => trim($_POST['cliente_email'] ?? ''),
             'cliente_telefone' => trim($_POST['cliente_telefone'] ?? ''),
             'cliente_endereco' => trim($_POST['cliente_endereco'] ?? ''),
+
             'forma_pagamento' => trim($_POST['forma_pagamento'] ?? ''),
             'observacoes' => trim($_POST['observacoes'] ?? ''),
             'consideracoes' => trim($_POST['consideracoes'] ?? '')
         ];
 
+        // ✅ se selecionou cliente existente, puxa do banco e sobrescreve o snapshot
+        if ($idCliente > 0) {
+            $cli = Cliente::findById($pdo, $idCliente, $idUsuario);
+            if ($cli) {
+                $data['cliente_nome']     = trim((string)($cli['nome'] ?? $data['cliente_nome']));
+                $data['cliente_email']    = trim((string)($cli['email'] ?? $data['cliente_email']));
+                $data['cliente_telefone'] = trim((string)($cli['telefone'] ?? $data['cliente_telefone']));
+                $data['cliente_endereco'] = trim((string)($cli['endereco'] ?? $data['cliente_endereco']));
+            } else {
+                // segurança: id de outro usuário
+                $data['id_cliente'] = null;
+            }
+        }
+
         $itens = $_POST['itens'] ?? [];
 
         if ($data['numero'] === '') $data['numero'] = Proposta::gerarNumero($pdo, $idUsuario);
+
         if ($data['cliente_nome'] === '') {
-            $_SESSION['erro'] = "Informe o nome do cliente.";
+            $_SESSION['erro'] = "Informe o nome do cliente (ou selecione um cliente existente).";
             header("Location: /financas/public/?url=propostas-new");
             exit;
         }
 
         try {
             $id = Proposta::create($pdo, $data, $itens);
-            header("Location: /financas/public/?url=propostas-edit&id=".$id);
+            header("Location: /financas/public/?url=propostas-edit&id=" . $id);
             exit;
         } catch (PDOException $e) {
-    if ($pdo->inTransaction()) $pdo->rollBack();
-
-    // Mostra a mensagem real do MySQL (temporário!)
-    $_SESSION['erro'] = "Erro ao criar proposta: " . $e->getMessage();
-    header("Location: /financas/public/?url=propostas-new");
-    exit;
-}
-
+            if ($pdo->inTransaction()) $pdo->rollBack();
+            $_SESSION['erro'] = "Erro ao criar proposta: " . $e->getMessage();
+            header("Location: /financas/public/?url=propostas-new");
+            exit;
+        }
     }
 
     public static function edit($pdo)
     {
         $idUsuario = usuarioId();
         $id = (int)($_GET['id'] ?? 0);
+
+        // ✅ lista clientes do usuário (para dropdown)
+        $clientes = Cliente::allByUsuario($pdo, $idUsuario);
 
         $proposta = Proposta::findById($pdo, $idUsuario, $id);
         if (!$proposta) {
@@ -109,34 +136,53 @@ class PropostaController
         $idUsuario = usuarioId();
         $id = (int)($_POST['id'] ?? 0);
 
+        $idCliente = (int)($_POST['id_cliente'] ?? 0);
+
         $data = [
+            'id_cliente' => $idCliente ?: null,
+
             'status' => $_POST['status'] ?? 'rascunho',
             'data_emissao' => $_POST['data_emissao'] ?? date('Y-m-d'),
             'validade_dias' => (int)($_POST['validade_dias'] ?? 15),
+
             'cliente_nome' => trim($_POST['cliente_nome'] ?? ''),
             'cliente_email' => trim($_POST['cliente_email'] ?? ''),
             'cliente_telefone' => trim($_POST['cliente_telefone'] ?? ''),
             'cliente_endereco' => trim($_POST['cliente_endereco'] ?? ''),
+
             'forma_pagamento' => trim($_POST['forma_pagamento'] ?? ''),
             'observacoes' => trim($_POST['observacoes'] ?? ''),
             'consideracoes' => trim($_POST['consideracoes'] ?? '')
         ];
 
+        // ✅ se selecionou cliente existente, sobrescreve snapshot
+        if ($idCliente > 0) {
+            $cli = Cliente::findById($pdo, $idCliente, $idUsuario);
+            if ($cli) {
+                $data['cliente_nome']     = trim((string)($cli['nome'] ?? $data['cliente_nome']));
+                $data['cliente_email']    = trim((string)($cli['email'] ?? $data['cliente_email']));
+                $data['cliente_telefone'] = trim((string)($cli['telefone'] ?? $data['cliente_telefone']));
+                $data['cliente_endereco'] = trim((string)($cli['endereco'] ?? $data['cliente_endereco']));
+            } else {
+                $data['id_cliente'] = null;
+            }
+        }
+
         $itens = $_POST['itens'] ?? [];
 
         if (!$id || $data['cliente_nome'] === '') {
-            $_SESSION['erro'] = "Preencha o cliente.";
+            $_SESSION['erro'] = "Preencha o cliente (ou selecione um cliente existente).";
             header("Location: /financas/public/?url=propostas");
             exit;
         }
 
         try {
             Proposta::update($pdo, $idUsuario, $id, $data, $itens);
-            header("Location: /financas/public/?url=propostas-edit&id=".$id);
+            header("Location: /financas/public/?url=propostas-edit&id=" . $id);
             exit;
         } catch (Exception $e) {
             $_SESSION['erro'] = "Erro ao salvar proposta.";
-            header("Location: /financas/public/?url=propostas-edit&id=".$id);
+            header("Location: /financas/public/?url=propostas-edit&id=" . $id);
             exit;
         }
     }
@@ -165,7 +211,6 @@ class PropostaController
 
         $itens = Proposta::itens($pdo, $id);
 
-        // Dompdf autoload (ajuste conforme seu projeto)
         $autoload1 = __DIR__ . '/../libs/dompdf/vendor/autoload.php';
         $autoload2 = __DIR__ . '/../../vendor/autoload.php';
 
@@ -173,7 +218,7 @@ class PropostaController
         elseif (is_file($autoload1)) require_once $autoload1;
         else {
             $_SESSION['erro'] = "Dompdf não encontrado. Suba a pasta vendor do dompdf (composer).";
-            header("Location: /financas/public/?url=propostas-edit&id=".$id);
+            header("Location: /financas/public/?url=propostas-edit&id=" . $id);
             exit;
         }
 
@@ -191,7 +236,7 @@ class PropostaController
         $dompdf->setPaper('A4', 'portrait');
         $dompdf->render();
 
-        $nome = 'proposta_'.$proposta['numero'].'.pdf';
+        $nome = 'proposta_' . ($proposta['numero'] ?? $id) . '.pdf';
         $dompdf->stream($nome, ["Attachment" => true]);
         exit;
     }
