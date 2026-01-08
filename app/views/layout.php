@@ -225,57 +225,126 @@ function menuOpenRelatorios($rotaAtual)
             </div>
 
             <div class="sidebar-menu">
-                <a class="sidebar-link <?= menuActive($rotaAtual, 'dashboard') ?>"
-                    href="/financas/public/?url=dashboard">
-                    <i class="bi bi-speedometer2"></i>
-                    <span>Dashboard</span>
-                </a>
 
-                <a class="sidebar-link <?= menuActive($rotaAtual, 'contas') ?>" href="/financas/public/?url=contas">
-                    <i class="bi bi-wallet2"></i>
-                    <span>Contas</span>
-                </a>
+                <?php $rotasFin = ['dashboard', 'contas', 'lancamentos', 'categorias', 'orcamentos', 'relatorios']; ?>
+                <?php $rotasCom = ['propostas', 'clientes', 'servicos', 'agenda']; ?>
 
-                <a class="sidebar-link <?= menuActive($rotaAtual, 'lancamentos') ?>"
-                    href="/financas/public/?url=lancamentos">
-                    <i class="bi bi-arrow-left-right"></i>
-                    <span>Lançamentos</span>
-                </a>
+                <!-- FINANÇAS (GRUPO) -->
+                <a class="sidebar-link is-group d-flex justify-content-between align-items-center <?= in_array($rotaAtual, $rotasFin, true) ? 'active fw-semibold' : '' ?>"
+                    data-bs-toggle="collapse" href="#menuFinancas" role="button"
+                    aria-expanded="<?= in_array($rotaAtual, $rotasFin, true) ? 'true' : 'false' ?>"
+                    aria-controls="menuFinancas">
 
-                <a class="sidebar-link <?= menuActive($rotaAtual, 'relatorios') ?>"
-                    href="/financas/public/?url=relatorios">
-                    <i class="bi bi-file-earmark-bar-graph"></i>
-                    <span>Relatórios</span>
-                </a>
-
-
-
-                <a class="sidebar-link <?= menuActive($rotaAtual, 'categorias') ?>"
-                    href="/financas/public/?url=categorias">
-                    <i class="bi bi-tags"></i>
-                    <span>Categorias</span>
-                </a>
-
-                <a class="sidebar-link <?= menuActive($rotaAtual, 'orcamentos') ?>"
-                    href="/financas/public/?url=orcamentos">
-                    <i class="bi bi-pie-chart"></i>
                     <span class="d-flex align-items-center gap-2">
-                        Orçamento
-                        <?php if ($qtdAlertasOrcamento > 0): ?>
-                            <span class="badge <?= count($estourados) > 0 ? 'bg-danger' : 'bg-warning text-dark' ?>">
-                                <?= $qtdAlertasOrcamento ?>
-                            </span>
-                        <?php endif; ?>
+                        <i class="bi bi-cash-coin"></i>
+                        <span>Finanças</span>
                     </span>
+
+                    <i class="bi bi-chevron-down chev"></i>
                 </a>
 
+                <div class="collapse <?= in_array($rotaAtual, $rotasFin, true) ? 'show' : '' ?> sidebar-sub"
+                    id="menuFinancas">
+
+                    <a class="sidebar-link is-sub <?= menuActive($rotaAtual, 'dashboard') ?>"
+                        href="/financas/public/?url=dashboard">
+                        <i class="bi bi-speedometer2"></i>
+                        <span>Dashboard</span>
+                    </a>
+
+                    <a class="sidebar-link is-sub <?= menuActive($rotaAtual, 'contas') ?>"
+                        href="/financas/public/?url=contas">
+                        <i class="bi bi-wallet2"></i>
+                        <span>Contas</span>
+                    </a>
+
+                    <a class="sidebar-link is-sub <?= menuActive($rotaAtual, 'lancamentos') ?>"
+                        href="/financas/public/?url=lancamentos">
+                        <i class="bi bi-arrow-left-right"></i>
+                        <span>Lançamentos</span>
+                    </a>
+
+                    <a class="sidebar-link is-sub <?= menuActive($rotaAtual, 'categorias') ?>"
+                        href="/financas/public/?url=categorias">
+                        <i class="bi bi-tags"></i>
+                        <span>Categorias</span>
+                    </a>
+
+                    <a class="sidebar-link is-sub <?= menuActive($rotaAtual, 'orcamentos') ?>"
+                        href="/financas/public/?url=orcamentos">
+                        <i class="bi bi-pie-chart"></i>
+                        <span class="d-flex align-items-center gap-2">
+                            Orçamento
+                            <?php if ($qtdAlertasOrcamento > 0): ?>
+                                <span class="badge <?= count($estourados) > 0 ? 'bg-danger' : 'bg-warning text-dark' ?>">
+                                    <?= $qtdAlertasOrcamento ?>
+                                </span>
+                            <?php endif; ?>
+                        </span>
+                    </a>
+
+                    <a class="sidebar-link is-sub <?= menuActive($rotaAtual, 'relatorios') ?>"
+                        href="/financas/public/?url=relatorios">
+                        <i class="bi bi-file-earmark-bar-graph"></i>
+                        <span>Relatórios</span>
+                    </a>
+                </div>
+
+
+                <!-- COMERCIAL (GRUPO) -->
+                <a class="sidebar-link is-group d-flex justify-content-between align-items-center <?= in_array($rotaAtual, $rotasCom, true) ? 'active fw-semibold' : '' ?>"
+                    data-bs-toggle="collapse" href="#menuComercial" role="button"
+                    aria-expanded="<?= in_array($rotaAtual, $rotasCom, true) ? 'true' : 'false' ?>"
+                    aria-controls="menuComercial">
+
+                    <span class="d-flex align-items-center gap-2">
+                        <i class="bi bi-briefcase"></i>
+                        <span>Comercial</span>
+                    </span>
+
+                    <i class="bi bi-chevron-down chev"></i>
+                </a>
+
+                <div class="collapse <?= in_array($rotaAtual, $rotasCom, true) ? 'show' : '' ?> sidebar-sub"
+                    id="menuComercial">
+
+                    <a class="sidebar-link is-sub <?= menuActive($rotaAtual, 'propostas') ?>"
+                        href="/financas/public/?url=propostas">
+                        <i class="bi bi-file-earmark-text"></i>
+                        <span>Orçamentos / Propostas</span>
+                    </a>
+
+                    <a class="sidebar-link is-sub <?= menuActive($rotaAtual, 'clientes') ?>"
+                        href="/financas/public/?url=clientes">
+                        <i class="bi bi-people"></i>
+                        <span>Clientes</span>
+                    </a>
+
+                    <a class="sidebar-link is-sub <?= menuActive($rotaAtual, 'servicos') ?>"
+                        href="/financas/public/?url=servicos">
+                        <i class="bi bi-box-seam"></i>
+                        <span>Serviços</span>
+                    </a>
+
+                    <a class="sidebar-link is-sub <?= menuActive($rotaAtual, 'agenda') ?>"
+                        href="/financas/public/?url=agenda">
+                        <i class="bi bi-calendar2-week"></i>
+                        <span>Agendamentos</span>
+                    </a>
+                </div>
+
+
+                <!-- SAIR -->
                 <div class="mt-2 pt-2 border-top" style="border-color: rgba(0,0,0,.06) !important;">
                     <a class="sidebar-link text-danger" href="/financas/public/?url=logout">
                         <i class="bi bi-box-arrow-right"></i>
                         <span>Sair</span>
                     </a>
                 </div>
+
             </div>
+
+
         </aside>
 
         <!-- PAGE CONTENT -->

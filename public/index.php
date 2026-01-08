@@ -49,11 +49,6 @@ switch ($rota) {
         require '../app/views/register.php';
         break;
 
-    case 'propostas-pdf':
-        require '../app/views/auth_guard.php';
-        PropostaController::pdf($pdo);
-        break;
-
     case 'register-store':
         AuthController::register($pdo);
         break;
@@ -127,6 +122,41 @@ switch ($rota) {
 
     case 'relatorio-pdf':
         RelatorioController::exportPdf($pdo);
+        break;
+    
+    case 'propostas':
+        require '../app/views/auth_guard.php';
+        PropostaController::index($pdo);
+        break;
+
+    case 'propostas-new':
+        require '../app/views/auth_guard.php';
+        PropostaController::createForm($pdo);
+        break;
+
+    case 'propostas-store':
+        require '../app/views/auth_guard.php';
+        PropostaController::store($pdo);
+        break;
+
+    case 'propostas-edit':
+        require '../app/views/auth_guard.php';
+        PropostaController::edit($pdo);
+        break;
+
+    case 'propostas-update':
+        require '../app/views/auth_guard.php';
+        PropostaController::update($pdo);
+        break;
+
+    case 'propostas-delete':
+        require '../app/views/auth_guard.php';
+        PropostaController::delete($pdo);
+        break;
+
+    case 'propostas-pdf':
+        require '../app/views/auth_guard.php';
+        PropostaController::pdf($pdo);
         break;
 
     case 'lancamentos':
@@ -208,40 +238,6 @@ switch ($rota) {
         ContaController::delete($pdo);
         break;
 
-    case 'propostas':
-        require '../app/views/auth_guard.php';
-        PropostaController::index($pdo);
-        break;
-
-    case 'propostas-new':
-        require '../app/views/auth_guard.php';
-        PropostaController::create($pdo);
-        break;
-
-    case 'propostas-store':
-        require '../app/views/auth_guard.php';
-        PropostaController::store($pdo);
-        break;
-
-    case 'propostas-edit':
-        require '../app/views/auth_guard.php';
-        PropostaController::edit($pdo);
-        break;
-
-    case 'propostas-update':
-        require '../app/views/auth_guard.php';
-        PropostaController::update($pdo);
-        break;
-
-    case 'propostas-status':
-        require '../app/views/auth_guard.php';
-        PropostaController::setStatus($pdo);
-        break;
-
-    case 'propostas-delete':
-        require '../app/views/auth_guard.php';
-        PropostaController::delete($pdo);
-        break;
 
     case 'orcamentos-store':
         require '../app/views/auth_guard.php';

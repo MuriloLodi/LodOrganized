@@ -81,8 +81,134 @@ body {
   background: #f1f3f5;
 }
 
-/* Segurança extra pra não estourar no layout */
 img {
   max-width: 100%;
   height: auto;
+}
+/* ===== Sidebar ===== */
+
+.sidebar-link.is-group {
+  background: #f6f8ff;
+  border: 1px solid rgba(13,110,253,.10);
+  color: #0d6efd;
+  font-weight: 700;
+}
+
+.sidebar-link.is-group:hover {
+  background: rgba(13,110,253,.10);
+}
+
+.sidebar-link.is-group .chev {
+  transition: transform .18s ease;
+  opacity: .75;
+}
+
+.sidebar-link.is-group[aria-expanded="true"] .chev {
+  transform: rotate(180deg);
+}
+
+.sidebar-sub {
+  position: relative;
+  margin: 6px 0 10px;
+  padding: 6px 0 6px;
+}
+
+.sidebar-link.is-sub {
+  margin-left: 6px;
+  padding: 9px 12px 9px 44px;
+  font-size: 14px;
+  color: #495057;
+  border-radius: 12px;
+}
+
+.sidebar-link.is-sub .bi {
+  font-size: 16px;
+  width: 18px;
+  margin-left: -24px; 
+  opacity: .85;
+}
+
+.sidebar-link.is-sub:hover {
+  background: rgba(13,110,253,.08);
+  color: #0d6efd;
+}
+
+.sidebar-link.is-sub.active {
+  background: rgba(13,110,253,.12);
+  color: #0d6efd;
+  font-weight: 700;
+}
+
+/* Badge alinhadinha */
+.sidebar-link .badge {
+  font-weight: 700;
+  padding: .35em .55em;
+  border-radius: 999px;
+}
+
+@media (max-width: 991.98px){
+  .sidebar-link.is-group { border-radius: 14px; }
+  .sidebar-link.is-sub { padding-left: 46px; }
+}
+
+#sidebar-wrapper{
+  min-height: 100vh;
+  max-height: 100vh;
+  overflow-y: auto;
+
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+#sidebar-wrapper::-webkit-scrollbar{
+  width: 0;
+  height: 0;
+}
+
+.submenu{
+  position: relative;
+  margin-left: 34px; 
+  padding-left: 18px;      
+  margin-top: 8px;
+}
+
+.submenu::before{
+  content: "";
+  position: absolute;
+  left: 7px;             
+  top: 6px;
+  bottom: 6px;
+  width: 2px;
+  background: rgba(0,0,0,.08);
+  border-radius: 2px;
+}
+
+.submenu a{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: 10px;
+  padding: 9px 10px;
+  border-radius: 12px;
+  text-decoration: none;
+  color: #495057;
+  font-size: 14px;
+
+  transition: .15s;
+}
+
+.submenu a:hover{
+  background: rgba(0,0,0,.04);
+}
+
+.submenu a.active{
+  background: rgba(13,110,253,.12);
+  color: #0d6efd;
+  font-weight: 600;
+}
+
+.submenu a .bi{
+  font-size: 16px;
+  width: 18px;
+  text-align: center;
 }
