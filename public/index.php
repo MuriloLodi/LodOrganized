@@ -14,6 +14,7 @@ require_once __DIR__ . '/../app/controllers/PropostaController.php';
 require_once __DIR__ . '/../app/controllers/PerfilController.php';
 require_once __DIR__ . '/../app/controllers/ClienteController.php';
 require_once __DIR__ . '/../app/controllers/ServicoController.php';
+require_once __DIR__ . '/../app/controllers/AdminController.php';
 
 
 $rota = $_GET['url'] ?? 'login';
@@ -266,32 +267,58 @@ switch ($rota) {
         require '../app/views/auth_guard.php';
         ClienteController::delete($pdo);
         break;
-    
 
-        case 'servicos':
-    require '../app/views/auth_guard.php';
-    ServicoController::index($pdo);
-    break;
 
-case 'servicos-store':
-    require '../app/views/auth_guard.php';
-    ServicoController::store($pdo);
-    break;
+    case 'servicos':
+        require '../app/views/auth_guard.php';
+        ServicoController::index($pdo);
+        break;
 
-case 'servicos-update':
-    require '../app/views/auth_guard.php';
-    ServicoController::update($pdo);
-    break;
+    case 'servicos-store':
+        require '../app/views/auth_guard.php';
+        ServicoController::store($pdo);
+        break;
 
-case 'servicos-delete':
-    require '../app/views/auth_guard.php';
-    ServicoController::delete($pdo);
-    break;
+    case 'servicos-update':
+        require '../app/views/auth_guard.php';
+        ServicoController::update($pdo);
+        break;
 
-case 'servicos-toggle':
-    require '../app/views/auth_guard.php';
-    ServicoController::toggle($pdo);
-    break;
+    case 'servicos-delete':
+        require '../app/views/auth_guard.php';
+        ServicoController::delete($pdo);
+        break;
+
+    case 'servicos-toggle':
+        require '../app/views/auth_guard.php';
+        ServicoController::toggle($pdo);
+        break;
+
+    case 'admin':
+        require '../app/views/admin_guard.php';
+        AdminController::index($pdo);
+        break;
+
+    case 'admin-usuarios':
+        require '../app/views/admin_guard.php';
+        AdminController::usuarios($pdo);
+        break;
+
+    case 'admin-usuario-toggle-block':
+        require '../app/views/admin_guard.php';
+        AdminController::toggleBlock($pdo);
+        break;
+
+    case 'admin-usuario-reset-senha':
+        require '../app/views/admin_guard.php';
+        AdminController::resetSenha($pdo);
+        break;
+
+    case 'admin-metricas':
+        require '../app/views/admin_guard.php';
+        AdminController::metricas($pdo);
+        break;
+
 
     default:
         echo "Página não encontrada";

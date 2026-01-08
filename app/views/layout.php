@@ -333,6 +333,52 @@ function menuOpenRelatorios($rotaAtual)
                     </a>
                 </div>
 
+                <?php
+                $rotasAdm = ['admin', 'admin-usuarios', 'admin-metricas'];
+                $isAdmin = !empty($_SESSION['usuario']['is_admin']);
+                ?>
+
+                <?php if ($isAdmin): ?>
+                    <!-- ADMIN (GRUPO) -->
+                    <a class="sidebar-link is-group d-flex justify-content-between align-items-center <?= in_array($rotaAtual, $rotasAdm, true) ? 'active fw-semibold' : '' ?>"
+                        data-bs-toggle="collapse" href="#menuAdmin" role="button"
+                        aria-expanded="<?= in_array($rotaAtual, $rotasAdm, true) ? 'true' : 'false' ?>"
+                        aria-controls="menuAdmin">
+
+                        <span class="d-flex align-items-center gap-2">
+                            <i class="bi bi-shield-lock"></i>
+                            <span>Admin</span>
+                        </span>
+
+                        <i class="bi bi-chevron-down chev"></i>
+                    </a>
+
+                    <div class="collapse <?= in_array($rotaAtual, $rotasAdm, true) ? 'show' : '' ?> sidebar-sub"
+                        id="menuAdmin">
+
+                        <a class="sidebar-link is-sub <?= menuActive($rotaAtual, 'admin') ?>"
+                            href="/financas/public/?url=admin">
+                            <i class="bi bi-grid-1x2"></i>
+                            <span>Painel</span>
+                        </a>
+
+                        <a class="sidebar-link is-sub <?= menuActive($rotaAtual, 'admin-usuarios') ?>"
+                            href="/financas/public/?url=admin-usuarios">
+                            <i class="bi bi-people"></i>
+                            <span>Usuários</span>
+                        </a>
+
+                        <a class="sidebar-link is-sub <?= menuActive($rotaAtual, 'admin-metricas') ?>"
+                            href="/financas/public/?url=admin-metricas">
+                            <i class="bi bi-graph-up"></i>
+                            <span>Métricas</span>
+                        </a>
+
+                    </div>
+                <?php endif; ?>
+
+
+
 
                 <!-- SAIR -->
                 <div class="mt-2 pt-2 border-top" style="border-color: rgba(0,0,0,.06) !important;">
