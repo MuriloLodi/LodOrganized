@@ -33,7 +33,7 @@ unset($_SESSION['erro']);
       <div class="brand">
         <div class="brand-badge">💰</div>
         <div class="brand-text">
-          <div class="brand-title">Finanças</div>
+          <div class="brand-title">LodFinance</div>
           <div class="brand-subtitle">Acesse sua conta</div>
         </div>
       </div>

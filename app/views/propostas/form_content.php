@@ -32,12 +32,14 @@ $idClienteAtual = (int)($proposta['id_cliente'] ?? 0);
 <?php endif; ?>
 
 <form method="POST" action="<?= $action ?>">
+  
   <?php if ($isEdit): ?>
     <input type="hidden" name="id" value="<?= (int)$proposta['id'] ?>">
   <?php endif; ?>
 
   <!-- ✅ guarda o vínculo do cliente (se selecionar) -->
   <input type="hidden" name="id_cliente" id="id_cliente" value="<?= $idClienteAtual ? (int)$idClienteAtual : '' ?>">
+<input type="hidden" name="oportunidade_id" value="<?= (int)($oportunidade_id ?? 0) ?>">
 
   <div class="row g-3">
     <div class="col-lg-4">

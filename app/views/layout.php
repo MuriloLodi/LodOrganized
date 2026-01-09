@@ -40,7 +40,7 @@ function menuOpenRelatorios($rotaAtual)
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
 
     <!-- CSS do app -->
-    <link rel="stylesheet" href="/financas/public/css/app.css">
+    <link rel="stylesheet" href="<?= asset('css/app.css') ?>">
 
     <style>
         /* ====== LAYOUT PRO ====== */
@@ -219,7 +219,7 @@ function menuOpenRelatorios($rotaAtual)
                     <i class="bi bi-cash-coin"></i>
                 </div>
                 <div class="sidebar-title">
-                    <strong>Finanças</strong><br>
+                    <strong>LodFinance</strong><br>
                     <small>Controle do mês</small>
                 </div>
             </div>
@@ -227,7 +227,7 @@ function menuOpenRelatorios($rotaAtual)
             <div class="sidebar-menu">
 
                 <?php $rotasFin = ['dashboard', 'contas', 'lancamentos', 'categorias', 'orcamentos', 'relatorios']; ?>
-                <?php $rotasCom = ['propostas', 'clientes', 'servicos', 'agenda']; ?>
+                <?php $rotasCom = ['propostas', 'clientes', 'servicos', 'agenda', 'funil']; ?>
 
                 <!-- FINANÇAS (GRUPO) -->
                 <a class="sidebar-link is-group d-flex justify-content-between align-items-center <?= in_array($rotaAtual, $rotasFin, true) ? 'active fw-semibold' : '' ?>"
@@ -331,6 +331,12 @@ function menuOpenRelatorios($rotaAtual)
                         <i class="bi bi-calendar2-week"></i>
                         <span>Agendamentos</span>
                     </a>
+                    <a class="sidebar-link is-sub <?= menuActive($rotaAtual, 'funil') ?>"
+                        href="/financas/public/?url=funil">
+                        <i class="bi bi-kanban"></i>
+                        <span>Funil de Vendas</span>
+                    </a>
+
                 </div>
 
                 <?php
@@ -489,7 +495,7 @@ function menuOpenRelatorios($rotaAtual)
 
     <!-- Chart.js (se suas telas usarem) -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="/financas/public/js/mask.js"></script>
+    <script src="<?= asset('js/mask.js') ?>"></script>
 
 </body>
 

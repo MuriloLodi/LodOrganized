@@ -1,6 +1,12 @@
 <?php
 session_start();
 
+header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+header("Cache-Control: post-check=0, pre-check=0", false);
+header("Pragma: no-cache");
+header("Expires: 0");
+
+
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../app/controllers/AuthController.php';
 require_once __DIR__ . '/../app/controllers/ContaController.php';
@@ -15,7 +21,8 @@ require_once __DIR__ . '/../app/controllers/PerfilController.php';
 require_once __DIR__ . '/../app/controllers/ClienteController.php';
 require_once __DIR__ . '/../app/controllers/ServicoController.php';
 require_once __DIR__ . '/../app/controllers/AdminController.php';
-
+require_once __DIR__ . '/../app/controllers/AgendaController.php';
+require_once __DIR__ . '/../app/controllers/FunilController.php';
 
 $rota = $_GET['url'] ?? 'login';
 
@@ -317,6 +324,106 @@ switch ($rota) {
     case 'admin-metricas':
         require '../app/views/admin_guard.php';
         AdminController::metricas($pdo);
+        break;
+
+    case 'funil':
+        require '../app/views/auth_guard.php';
+        FunilController::index($pdo);
+        break;
+
+    case 'funil-store':
+        require '../app/views/auth_guard.php';
+        FunilController::store($pdo);
+        break;
+
+    case 'funil-update':
+        require '../app/views/auth_guard.php';
+        FunilController::update($pdo);
+        break;
+
+    case 'funil-delete':
+        require '../app/views/auth_guard.php';
+        FunilController::delete($pdo);
+        break;
+
+    case 'funil-move':
+        require '../app/views/auth_guard.php';
+        FunilController::move($pdo);
+        break;
+    case 'agenda':
+        require '../app/views/auth_guard.php';
+        require_once __DIR__ . '/../app/controllers/AgendaController.php';
+        AgendaController::index($pdo);
+        break;
+
+    case 'agenda-new':
+        require '../app/views/auth_guard.php';
+        require_once __DIR__ . '/../app/controllers/AgendaController.php';
+        AgendaController::createForm($pdo);
+        break;
+
+    case 'agenda-store':
+        require '../app/views/auth_guard.php';
+        require_once __DIR__ . '/../app/controllers/AgendaController.php';
+        AgendaController::store($pdo);
+        break;
+
+    case 'agenda-edit':
+        require '../app/views/auth_guard.php';
+        require_once __DIR__ . '/../app/controllers/AgendaController.php';
+        AgendaController::edit($pdo);
+        break;
+
+    case 'agenda-update':
+        require '../app/views/auth_guard.php';
+        require_once __DIR__ . '/../app/controllers/AgendaController.php';
+        AgendaController::update($pdo);
+        break;
+
+    case 'agenda-delete':
+        require '../app/views/auth_guard.php';
+        require_once __DIR__ . '/../app/controllers/AgendaController.php';
+        AgendaController::delete($pdo);
+        break;
+
+    case 'agenda-status':
+        require '../app/views/auth_guard.php';
+        require_once __DIR__ . '/../app/controllers/AgendaController.php';
+        AgendaController::status($pdo);
+        break;
+
+    case 'agenda-bloqueio-store':
+        require '../app/views/auth_guard.php';
+        require_once __DIR__ . '/../app/controllers/AgendaController.php';
+        AgendaController::bloqueioStore($pdo);
+        break;
+
+    case 'agenda-bloqueio-delete':
+        require '../app/views/auth_guard.php';
+        require_once __DIR__ . '/../app/controllers/AgendaController.php';
+        AgendaController::bloqueioDelete($pdo);
+        break;
+
+    /* PÚBLICO */
+    case 'agendar':
+        require_once __DIR__ . '/../app/controllers/AgendaController.php';
+        AgendaController::publicoForm($pdo);
+        break;
+
+    case 'agendar-slots':
+        require_once __DIR__ . '/../app/controllers/AgendaController.php';
+        AgendaController::publicoSlots($pdo);
+        break;
+
+    case 'agendar-store':
+        require_once __DIR__ . '/../app/controllers/AgendaController.php';
+        AgendaController::publicoStore($pdo);
+        break;
+
+    /* CRON NOTIFICAÇÕES */
+    case 'agenda-notificacoes':
+        require_once __DIR__ . '/../app/controllers/AgendaController.php';
+        AgendaController::notificacoes($pdo);
         break;
 
 

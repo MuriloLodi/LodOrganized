@@ -55,3 +55,12 @@ function imgToDataUri($absPath) {
   $data = base64_encode(file_get_contents($absPath));
   return "data:$mime;base64,$data";
 }
+function asset(string $path): string
+{
+    $path = ltrim($path, '/'); // ex: assets/app.css
+    $baseUrl = "/financas/public/";
+    $full = __DIR__ . "/../../public/" . $path;
+
+    $v = is_file($full) ? filemtime($full) : time();
+    return $baseUrl . $path . "?v=" . $v;
+}
