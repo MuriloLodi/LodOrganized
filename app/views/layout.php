@@ -219,9 +219,13 @@ function menuOpenRelatorios($rotaAtual)
                     <i class="bi bi-cash-coin"></i>
                 </div>
                 <div class="sidebar-title">
-                    <strong>LodFinance</strong><br>
-                    <small>Controle do mês</small>
-                </div>
+    <div class="sidebar-brandline">
+        <img src="/financas/public/img/logo-empresa.png" class="sidebar-brandimg" alt="Logo LodFinance">
+        <strong>LodFinance</strong>
+    </div>
+    <small>Controle do mês</small>
+</div>
+
             </div>
 
             <div class="sidebar-menu">
@@ -413,7 +417,11 @@ function menuOpenRelatorios($rotaAtual)
                         <i class="bi bi-list"></i>
                     </button>
                     <div class="d-none d-md-block">
-                        <div class="fw-semibold">Finanças</div>
+                        <div class="fw-semibold d-flex align-items-center gap-2">
+  <img src="/financas/public/img/logo-empresa.png" class="topbar-brandimg" alt="Logo">
+  <span>Finanças</span>
+</div>
+
                         <div class="text-muted small">Seu painel</div>
                     </div>
                 </div>

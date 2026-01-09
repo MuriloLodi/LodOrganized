@@ -256,3 +256,24 @@ form > button[type="submit"]:active {
   .hero h3 { display: block; }
   form { padding: 28px; }
 }
+.brand-title{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brand-logo{
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+  border-radius: 8px;
+  flex: 0 0 auto;
+}
+.topbar-brandimg{
+  width:18px;
+  height:18px;
+  object-fit:contain;
+  border-radius:6px;
+  border:1px solid rgba(0,0,0,.08);
+  background:#fff;
+}

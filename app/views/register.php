@@ -32,9 +32,16 @@ unset($_SESSION['erro']);
 
     <form method="POST" action="/financas/public/?url=register-store" autocomplete="on">
       <div class="brand">
-        <div class="brand-badge">✨</div>
         <div class="brand-text">
-          <div class="brand-title">LodFinance</div>
+          <div class="brand-title">
+  <img
+    src="/financas/public/img/logo-empresa.png"
+    class="brand-logo"
+    alt="Logo LodFinance"
+  >
+  <span>LodFinance</span>
+</div>
+
           <div class="brand-subtitle">Criar conta</div>
         </div>
       </div>

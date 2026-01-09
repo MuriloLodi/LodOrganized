@@ -232,36 +232,66 @@ class Agendamento
      * Slots disponíveis (público)
      * Padrão: 30min slot, 60min duração, seg-sex 09-18, sáb 09-12, dom fechado
      */
-    public static function slotsDisponiveis(PDO $pdo, int $idUsuario, string $dataYmd, int $slotMin = 30, int $duracaoMin = 60): array
-    {
-        $diaSemana = (int)date('w', strtotime($dataYmd)); // 0..6
+    /**
+ * Slots disponíveis (público)
+ * Padrão: todos os dias 09:00-18:00
+ * (se quiser folga em algum dia: crie um bloqueio semanal 00:00-23:59)
+ */
+public static function slotsDisponiveis(PDO $pdo, int $idUsuario, string $dataYmd, int $slotMin = 30, int $duracaoMin = 60): array
+{
+    $diaSemana = (int)date('w', strtotime($dataYmd)); // 0..6 (DOM=0)
 
-        // domingo fechado
-        if ($diaSemana === 0) return [];
+    // ====== PADRÃO: ABERTO TODOS OS DIAS ======
+    $inicioDia = "09:00";
+    $fimDia    = "18:00";
 
-        // janelas padrão
-        $inicioDia = "09:00";
-        $fimDia = "18:00";
+    /**
+     * OPCIONAL (se você tiver/for criar uma tabela de disponibilidade por dia):
+     * agenda_disponibilidade(id_usuario, dia_semana, aberto, hora_inicio, hora_fim)
+     * - Se não existir a tabela, o try/catch ignora e mantém o padrão aberto.
+     */
+    try {
+        $st = $pdo->prepare("
+            SELECT aberto, hora_inicio, hora_fim
+              FROM agenda_disponibilidade
+             WHERE id_usuario = ?
+               AND dia_semana = ?
+             LIMIT 1
+        ");
+        $st->execute([$idUsuario, $diaSemana]);
+        $cfg = $st->fetch(PDO::FETCH_ASSOC);
 
-        // sábado reduz
-        if ($diaSemana === 6) {
-            $inicioDia = "09:00";
-            $fimDia = "12:00";
-        }
-
-        $start = strtotime($dataYmd . " " . $inicioDia . ":00");
-        $end   = strtotime($dataYmd . " " . $fimDia . ":00");
-
-        $slots = [];
-        for ($t = $start; $t + ($duracaoMin * 60) <= $end; $t += ($slotMin * 60)) {
-            $ini = date('Y-m-d H:i:s', $t);
-            $fim = date('Y-m-d H:i:s', $t + ($duracaoMin * 60));
-
-            if (!self::conflito($pdo, $idUsuario, $ini, $fim, null)) {
-                $slots[] = date('H:i', $t);
+        if ($cfg) {
+            if ((int)$cfg['aberto'] === 0) {
+                return []; // usuário marcou como fechado nesse dia
             }
-        }
 
-        return $slots;
+            if (!empty($cfg['hora_inicio'])) $inicioDia = substr((string)$cfg['hora_inicio'], 0, 5);
+            if (!empty($cfg['hora_fim']))    $fimDia    = substr((string)$cfg['hora_fim'], 0, 5);
+        }
+    } catch (PDOException $e) {
+        // se a tabela não existir (ou host limitado), segue com padrão aberto
     }
+
+    $start = strtotime($dataYmd . " " . $inicioDia . ":00");
+    $end   = strtotime($dataYmd . " " . $fimDia . ":00");
+
+    if ($start === false || $end === false || $end <= $start) return [];
+
+    $slots = [];
+    $slotStep = max(5, (int)$slotMin) * 60;
+    $durSec   = max(15, (int)$duracaoMin) * 60;
+
+    for ($t = $start; $t + $durSec <= $end; $t += $slotStep) {
+        $ini = date('Y-m-d H:i:s', $t);
+        $fim = date('Y-m-d H:i:s', $t + $durSec);
+
+        if (!self::conflito($pdo, $idUsuario, $ini, $fim, null)) {
+            $slots[] = date('H:i', $t);
+        }
+    }
+
+    return $slots;
+}
+
 }

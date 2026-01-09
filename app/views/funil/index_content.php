@@ -4,14 +4,14 @@ $cardsPorEtapa = $cardsPorEtapa ?? [];
 $clientes = $clientes ?? [];
 ?>
 
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-4">
   <div>
     <h1 class="mb-0">Funil de Vendas</h1>
     <div class="text-muted">Arraste os cards entre etapas e organize sua negociação</div>
   </div>
 
   <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalNovaOportunidade">
-    <i class="bi bi-plus-lg"></i> Nova oportunidade
+    <i class="bi bi-plus-lg me-1"></i> Nova oportunidade
   </button>
 </div>
 
@@ -28,101 +28,220 @@ $clientes = $clientes ?? [];
 <?php endif; ?>
 
 <style>
-  .kanban-board { display:flex; gap:14px; overflow:auto; padding-bottom:10px; }
-  .kanban-col { min-width: 290px; max-width: 320px; flex: 0 0 auto; }
-  .kanban-head {
-    background:#fff; border:1px solid rgba(0,0,0,.08);
-    border-radius:14px; padding:10px 12px; margin-bottom:10px;
-    display:flex; justify-content:space-between; align-items:center;
+  /* ===== PADRÃO FRONT (Kanban) ===== */
+  :root{
+    --soft-border: rgba(0,0,0,.08);
+    --soft-shadow-sm: 0 10px 26px rgba(0,0,0,.08);
+    --soft-shadow: 0 16px 44px rgba(0,0,0,.10);
   }
-  .kanban-drop {
-    background: rgba(255,255,255,.6);
-    border: 1px dashed rgba(0,0,0,.12);
-    border-radius:14px;
-    padding:10px;
-    min-height: 120px;
+
+  .kanban-wrap{
+    border: 1px solid var(--soft-border);
+    border-radius: 18px;
+    background: #fff;
+    box-shadow: var(--soft-shadow-sm);
+    overflow: hidden;
   }
-  .kanban-card {
+
+  .kanban-toolbar{
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--soft-border);
+    background: rgba(248,249,250,.55);
+  }
+
+  .kanban-board{
+    display:flex;
+    gap: 14px;
+    overflow:auto;
+    padding: 14px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .kanban-col{
+    min-width: 300px;
+    max-width: 340px;
+    flex: 0 0 auto;
+  }
+
+  .kanban-head{
     background:#fff;
-    border:1px solid rgba(0,0,0,.08);
-    border-radius:14px;
+    border:1px solid var(--soft-border);
+    border-radius:16px;
+    padding:10px 12px;
+    margin-bottom:10px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    box-shadow: 0 8px 18px rgba(0,0,0,.05);
+  }
+
+  .kanban-head .title{
+    font-weight: 850;
+    letter-spacing: -.2px;
+    margin: 0;
+  }
+
+  .kanban-head .meta{
+    color:#6c757d;
+    font-size: .85rem;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  .kanban-drop{
+    background: rgba(248,249,250,.55);
+    border: 1px dashed rgba(0,0,0,.14);
+    border-radius:16px;
+    padding:10px;
+    min-height: 140px;
+  }
+
+  .kanban-card{
+    background:#fff;
+    border:1px solid var(--soft-border);
+    border-radius:16px;
     padding:10px 10px;
     margin-bottom:10px;
     cursor: grab;
-    box-shadow: 0 4px 16px rgba(0,0,0,.04);
+    box-shadow: 0 10px 22px rgba(0,0,0,.06);
   }
-  .kanban-card.dragging { opacity: .65; }
-  .kanban-title { font-weight:700; margin-bottom:4px; }
-  .kanban-meta { font-size:12px; color:#6b7280; }
-  .kanban-actions { margin-top:8px; display:flex; gap:6px; }
-  .drop-hover { background: rgba(13,110,253,.06); border-color: rgba(13,110,253,.35); }
+  .kanban-card:last-child{ margin-bottom: 0; }
+
+  .kanban-card.dragging{ opacity:.65; }
+
+  .kanban-title{
+    font-weight: 850;
+    letter-spacing: -.2px;
+    margin-bottom: 6px;
+    line-height: 1.15;
+  }
+
+  .kanban-meta{
+    font-size: .86rem;
+    color:#6c757d;
+    display:flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .kanban-meta i{ margin-right: 6px; }
+
+  .kanban-actions{
+    margin-top:10px;
+    display:flex;
+    gap:6px;
+    flex-wrap: wrap;
+  }
+
+  .drop-hover{
+    background: rgba(13,110,253,.06);
+    border-color: rgba(13,110,253,.35);
+  }
+
+  .pill{
+    border: 1px solid var(--soft-border);
+    border-radius: 999px;
+    padding: .28rem .55rem;
+    background: rgba(255,255,255,.65);
+    color: #6c757d;
+    font-weight: 750;
+    font-size: .8rem;
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+  }
+
+  @media (max-width: 576px){
+    .kanban-board{ padding: 12px; }
+    .kanban-col{ min-width: 280px; }
+    .kanban-head, .kanban-drop, .kanban-card{ border-radius: 14px; }
+  }
 </style>
 
-<div class="kanban-board">
-  <?php foreach ($etapas as $key => $label): 
+<div class="kanban-wrap">
+  <div class="kanban-toolbar d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <div class="d-flex gap-2 flex-wrap">
+      <span class="pill"><i class="bi bi-arrows-move"></i> Arraste para mover</span>
+      <span class="pill"><i class="bi bi-lightning-charge"></i> Salva automaticamente</span>
+    </div>
+    <div class="text-muted small">
+      Dica: solte o card na posição desejada dentro da etapa.
+    </div>
+  </div>
+
+  <div class="kanban-board">
+    <?php foreach ($etapas as $key => $label):
       $cards = $cardsPorEtapa[$key] ?? [];
       $totalEtapa = 0;
       foreach ($cards as $c) $totalEtapa += (float)($c['valor'] ?? 0);
-  ?>
-    <div class="kanban-col">
-      <div class="kanban-head">
-        <div class="fw-semibold"><?= htmlspecialchars($label) ?></div>
-        <div class="text-muted small">
-          <?= count($cards) ?> • R$ <?= number_format($totalEtapa, 2, ',', '.') ?>
+    ?>
+      <div class="kanban-col">
+        <div class="kanban-head">
+          <div class="title"><?= htmlspecialchars($label) ?></div>
+          <div class="meta">
+            <?= count($cards) ?> • R$ <?= number_format($totalEtapa, 2, ',', '.') ?>
+          </div>
+        </div>
+
+        <div class="kanban-drop" data-etapa="<?= htmlspecialchars($key) ?>">
+          <?php if (empty($cards)): ?>
+            <div class="text-muted small p-2">
+              Sem oportunidades aqui.
+            </div>
+          <?php endif; ?>
+
+          <?php foreach ($cards as $c): ?>
+            <div class="kanban-card" draggable="true" data-id="<?= (int)$c['id'] ?>">
+              <div class="kanban-title"><?= htmlspecialchars($c['titulo'] ?? '') ?></div>
+
+              <div class="kanban-meta">
+                <?php if (!empty($c['cliente_nome'])): ?>
+                  <div><i class="bi bi-person"></i><?= htmlspecialchars($c['cliente_nome']) ?></div>
+                <?php endif; ?>
+
+                <?php if (!empty($c['valor'])): ?>
+                  <div><i class="bi bi-cash-coin"></i>R$ <?= number_format((float)$c['valor'], 2, ',', '.') ?></div>
+                <?php endif; ?>
+
+                <?php if (!empty($c['data_prevista'])): ?>
+                  <div><i class="bi bi-calendar-event"></i><?= date('d/m/Y', strtotime($c['data_prevista'])) ?></div>
+                <?php endif; ?>
+              </div>
+
+              <div class="kanban-actions">
+                <button class="btn btn-outline-secondary btn-sm"
+                        type="button"
+                        data-bs-toggle="modal"
+                        data-bs-target="#modalEditar"
+                        data-id="<?= (int)$c['id'] ?>"
+                        data-titulo="<?= htmlspecialchars($c['titulo'] ?? '', ENT_QUOTES) ?>"
+                        data-descricao="<?= htmlspecialchars($c['descricao'] ?? '', ENT_QUOTES) ?>"
+                        data-valor="<?= !empty($c['valor']) ? number_format((float)$c['valor'], 2, ',', '.') : '' ?>"
+                        data-id_cliente="<?= (int)($c['id_cliente'] ?? 0) ?>"
+                        data-data_prevista="<?= htmlspecialchars($c['data_prevista'] ?? '') ?>">
+                  <i class="bi bi-pencil"></i>
+                </button>
+
+                <a class="btn btn-outline-primary btn-sm"
+                   href="/financas/public/?url=propostas-new&op=<?= (int)$c['id'] ?>"
+                   title="Gerar proposta">
+                  <i class="bi bi-file-earmark-text"></i>
+                </a>
+
+                <form method="POST"
+                      action="/financas/public/?url=funil-delete"
+                      onsubmit="return confirm('Remover oportunidade?')">
+                  <input type="hidden" name="id" value="<?= (int)$c['id'] ?>">
+                  <button class="btn btn-outline-danger btn-sm" type="submit" title="Excluir">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </form>
+              </div>
+            </div>
+          <?php endforeach; ?>
         </div>
       </div>
-
-      <div class="kanban-drop" data-etapa="<?= htmlspecialchars($key) ?>">
-        <?php foreach ($cards as $c): ?>
-          <div class="kanban-card" draggable="true" data-id="<?= (int)$c['id'] ?>">
-            <div class="kanban-title"><?= htmlspecialchars($c['titulo'] ?? '') ?></div>
-
-            <div class="kanban-meta">
-              <?php if (!empty($c['cliente_nome'])): ?>
-                <div><i class="bi bi-person"></i> <?= htmlspecialchars($c['cliente_nome']) ?></div>
-              <?php endif; ?>
-
-              <?php if (!empty($c['valor'])): ?>
-                <div><i class="bi bi-currency-dollar"></i> R$ <?= number_format((float)$c['valor'], 2, ',', '.') ?></div>
-              <?php endif; ?>
-
-              <?php if (!empty($c['data_prevista'])): ?>
-                <div><i class="bi bi-calendar-event"></i> <?= date('d/m/Y', strtotime($c['data_prevista'])) ?></div>
-              <?php endif; ?>
-            </div>
-
-            <div class="kanban-actions">
-              <button class="btn btn-outline-secondary btn-sm btn-edit"
-                      type="button"
-                      data-bs-toggle="modal"
-                      data-bs-target="#modalEditar"
-                      data-id="<?= (int)$c['id'] ?>"
-                      data-titulo="<?= htmlspecialchars($c['titulo'] ?? '', ENT_QUOTES) ?>"
-                      data-descricao="<?= htmlspecialchars($c['descricao'] ?? '', ENT_QUOTES) ?>"
-                      data-valor="<?= !empty($c['valor']) ? number_format((float)$c['valor'], 2, ',', '.') : '' ?>"
-                      data-id_cliente="<?= (int)($c['id_cliente'] ?? 0) ?>"
-                      data-data_prevista="<?= htmlspecialchars($c['data_prevista'] ?? '') ?>"
-              >
-                <i class="bi bi-pencil"></i>
-              </button>
-
-              <form method="POST" action="/financas/public/?url=funil-delete" onsubmit="return confirm('Remover oportunidade?')">
-                <input type="hidden" name="id" value="<?= (int)$c['id'] ?>">
-                <button class="btn btn-outline-danger btn-sm" type="submit">
-                  <i class="bi bi-trash"></i>
-                </button>
-              </form>
-              <a class="btn btn-outline-primary btn-sm"
-   href="/financas/public/?url=propostas-new&op=<?= (int)$c['id'] ?>">
-  <i class="bi bi-file-earmark-text"></i>
-</a>
-
-            </div>
-          </div>
-        <?php endforeach; ?>
-      </div>
-    </div>
-  <?php endforeach; ?>
+    <?php endforeach; ?>
+  </div>
 </div>
 
 <!-- MODAL: NOVA -->
@@ -240,6 +359,7 @@ $clientes = $clientes ?? [];
 
 <script>
 (function(){
+  // ===== Drag & Drop (mantém seu backend /funil-move) =====
   let dragged = null;
   let sourceCol = null;
 
@@ -281,22 +401,12 @@ $clientes = $clientes ?? [];
       if(!dragged) return;
 
       const destCol = col;
-
       const updates = [];
 
-      // se mudou de coluna -> salva origem e destino
       if (sourceCol && sourceCol !== destCol) {
-        updates.push({
-          etapa: sourceCol.dataset.etapa,
-          ids: idsFromColumn(sourceCol)
-        });
+        updates.push({ etapa: sourceCol.dataset.etapa, ids: idsFromColumn(sourceCol) });
       }
-
-      // sempre salva destino
-      updates.push({
-        etapa: destCol.dataset.etapa,
-        ids: idsFromColumn(destCol)
-      });
+      updates.push({ etapa: destCol.dataset.etapa, ids: idsFromColumn(destCol) });
 
       try {
         await fetch('/financas/public/?url=funil-move', {
@@ -316,12 +426,25 @@ $clientes = $clientes ?? [];
     return els.reduce((closest, child) => {
       const box = child.getBoundingClientRect();
       const offset = y - box.top - box.height / 2;
-      if (offset < 0 && offset > closest.offset) {
-        return { offset: offset, element: child };
-      }
+      if (offset < 0 && offset > closest.offset) return { offset, element: child };
       return closest;
     }, { offset: Number.NEGATIVE_INFINITY }).element;
   }
+
+  // ===== Modal editar (preenche campos) =====
+  const modal = document.getElementById('modalEditar');
+  if(modal){
+    modal.addEventListener('show.bs.modal', function(ev){
+      const btn = ev.relatedTarget;
+      if(!btn) return;
+
+      document.getElementById('edit_id').value = btn.getAttribute('data-id') || '';
+      document.getElementById('edit_titulo').value = btn.getAttribute('data-titulo') || '';
+      document.getElementById('edit_descricao').value = btn.getAttribute('data-descricao') || '';
+      document.getElementById('edit_valor').value = btn.getAttribute('data-valor') || '';
+      document.getElementById('edit_id_cliente').value = btn.getAttribute('data-id_cliente') || '0';
+      document.getElementById('edit_data_prevista').value = btn.getAttribute('data-data_prevista') || '';
+    });
+  }
 })();
 </script>
-
