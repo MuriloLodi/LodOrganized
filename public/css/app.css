@@ -212,3 +212,18 @@ img {
   width: 18px;
   text-align: center;
 }
+.sidebar-brandimg{
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+  border-radius: 8px;
+  flex: 0 0 auto;
+}
+.topbar-brandimg{
+  width:18px;
+  height:18px;
+  object-fit:contain;
+  border-radius:6px;
+  border:1px solid rgba(0,0,0,.08);
+  background:#fff;
+}
